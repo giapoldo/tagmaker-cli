@@ -2,15 +2,15 @@ package main
 
 import (
 	"github.com/76creates/stickers/flexbox"
+	"github.com/charmbracelet/bubbles/textinput"
 )
 
 type model struct {
+	textInput      textinput.Model
 	flexBox        *flexbox.FlexBox
 	tag            Tag
 	currCursorRow  int
 	currCursorCell int
-	nextCursorRow  int
-	nextCursorCell int
 }
 
 func (m *model) createRows( /*setRows bool*/ ) {
@@ -18,7 +18,11 @@ func (m *model) createRows( /*setRows bool*/ ) {
 	rows := []*flexbox.Row{}
 
 	// Add first padding row before adding tag rows
-	rows = append(rows, m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 1).SetStyle(styleBG)))
+	firstRow := m.flexBox.NewRow()
+	firstRow.AddCells(flexbox.NewCell(120, 1).SetStyle(styleBG)).
+		AddCells(flexbox.NewCell(120, 1).SetStyle(styleBG)).
+		AddCells(flexbox.NewCell(120, 1).SetStyle(styleBG))
+	rows = append(rows, firstRow)
 
 	// Add tag rows
 	for _, row := range m.tag.table {
@@ -42,10 +46,20 @@ func (m *model) createRows( /*setRows bool*/ ) {
 		rows = append(rows, _fbRow)
 	}
 	// Add closing padding row
-	rows = append(rows, m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 1).SetStyle(styleBG)))
+	lastRow := m.flexBox.NewRow()
+	lastRow.AddCells(flexbox.NewCell(120, 1).SetStyle(styleBG)).
+		AddCells(flexbox.NewCell(120, 1).SetStyle(styleBG)).
+		AddCells(flexbox.NewCell(120, 1).SetStyle(styleBG))
+	rows = append(rows, lastRow)
 
 	// Highlight the current content row and cell as selected
-	rows[m.currCursorRow].GetCell(m.currCursorCell).SetStyle(styleSelected)
+	if m.flexBox.RowsLen() > 0 {
+		if m.currCursorRow > 0 || m.currCursorRow < m.flexBox.RowsLen()-1 ||
+			m.currCursorCell > 0 || m.currCursorCell < m.flexBox.GetRow(m.currCursorRow).CellsLen() {
+
+			rows[m.currCursorRow].GetCell(m.currCursorCell).SetStyle(styleSelected)
+		}
+	}
 
 	// SetRows instead of AddRows, since setrows overwrites, and when
 	// calling CreateRows, we always want to overwrite to refresh the view.
@@ -110,11 +124,10 @@ func InitialModel() *model {
 	}
 
 	// all 4 cursor states start at 1 because of padding rows and cells.
-	dm.currCursorRow = 1
-	dm.currCursorCell = 1
-	dm.nextCursorRow = 1
-	dm.nextCursorCell = 1
-	dm.createRows( /*false*/ )
+	dm.currCursorRow = 0
+	dm.currCursorCell = 0
+
+	dm.createRows()
 
 	return &dm
 }

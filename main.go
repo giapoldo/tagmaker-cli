@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func (m *model) Init() tea.Cmd {
 	// Just return `nil`, which means "no I/O right now, please."
-	return nil
+	return textinput.Blink
+	// return nil
 }
 
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -47,7 +49,10 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// // The the spacebar (a literal space) add a row to the tag
 		case "r":
 			m.InsertTagRow()
-
+		case "d":
+			m.DeleteTagRow()
+		case "f":
+			m.DeleteTagCell()
 		case "c":
 			/*err :=*/ m.InsertTagCellLeft(0.5)
 			// if err != nil {
@@ -68,7 +73,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 func (m *model) View() string {
-	m.flexBox.ForceRecalculate()
+	// m.flexBox.ForceRecalculate()
 	return m.flexBox.Render()
 }
 

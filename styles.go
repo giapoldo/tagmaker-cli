@@ -7,7 +7,7 @@ import (
 var styleNormal = lipgloss.NewStyle().
 	Background(lipgloss.Color("#FFFFFF")).
 	Foreground(lipgloss.Color("#000000")).
-	Border(lipgloss.NormalBorder(), true, true, false, true). // each row handles their top border
+	Border(lipgloss.NormalBorder(), true, true, true, true). // each row handles their top border
 	BorderBackground(lipgloss.Color("#FFFFFF")).
 	BorderForeground(lipgloss.Color("#000000"))
 
