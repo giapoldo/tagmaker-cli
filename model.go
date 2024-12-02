@@ -13,26 +13,23 @@ type model struct {
 	nextCursorCell int
 }
 
-func (m *model) createRows() {
-
-	m.flexBox = flexbox.New(0, 0)
+func (m *model) createRows( /*setRows bool*/ ) {
 
 	rows := []*flexbox.Row{}
+
+	// Add first padding row before adding tag rows
 	rows = append(rows, m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 1).SetStyle(styleBG)))
 
+	// Add tag rows
 	for _, row := range m.tag.table {
 		_fbRow := m.flexBox.NewRow()
-		// rows = append(rows, m.flexBox.NewRow())
-		// m.flexBox.AddRows(rows)
-
-		// _fbRow := m.flexBox.GetRow(i + 1) // +1 because of row padding
 
 		if _fbRow == nil {
 			panic("could not find the table row")
 		}
-
+		// Add first padding cell before adding content cells
 		_fbRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
-
+		// Add content cells
 		for j, cell := range row {
 			_fbRow.AddCells(flexbox.NewCell(int(cell.widthPerUnit*100), 1).SetStyle(styleNormal))
 			_cell := _fbRow.GetCell(j + 1).SetContent(cell.text) // +1 because of cell padding
@@ -40,68 +37,74 @@ func (m *model) createRows() {
 				panic("could not find the table cell")
 			}
 		}
+		// Add closing padding cell
 		_fbRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
 		rows = append(rows, _fbRow)
 	}
+	// Add closing padding row
 	rows = append(rows, m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 1).SetStyle(styleBG)))
 
-	rows[1].GetCell(1).SetStyle(styleSelected)
+	// Highlight the current content row and cell as selected
+	rows[m.currCursorRow].GetCell(m.currCursorCell).SetStyle(styleSelected)
 
-	m.flexBox.AddRows(rows)
+	// SetRows instead of AddRows, since setrows overwrites, and when
+	// calling CreateRows, we always want to overwrite to refresh the view.
+	m.flexBox.SetRows(rows)
 }
 
 func InitialModel() *model {
 
 	dm := model{}
-
+	dm.flexBox = flexbox.New(0, 0)
+	dm.flexBox.LockRowHeight(4)
 	dm.tag = Tag{
-		width:  80.0,
-		height: 40.0,
+		// width:  80.0,
+		// height: 40.0,
 		table: TagTable{
 			{
 				{widthPerUnit: 1.0,
-					text:  "Title 1",
-					title: true,
-					style: "B"},
+					text:      "Title 1",
+					centered:  true,
+					textStyle: "B"},
 			},
 			{
 				{widthPerUnit: 1.0,
-					text:  "Subtitle",
-					title: true,
-					style: ""},
+					text:      "Subtitle",
+					centered:  true,
+					textStyle: ""},
 			}, {
 				{widthPerUnit: 1.0,
-					text:  "",
-					title: false,
-					style: ""},
+					text:      "",
+					centered:  false,
+					textStyle: ""},
 			},
 			{
 				{widthPerUnit: 0.5,
-					text:  "Field 1",
-					title: false,
-					style: "B"},
+					text:      "Field 1",
+					centered:  false,
+					textStyle: "B"},
 				{widthPerUnit: 0.5,
-					text:  "UTF8 Dátå 1",
-					title: false,
-					style: ""},
+					text:      "UTF8 Dátå 1",
+					centered:  false,
+					textStyle: ""},
 			},
 			{
 				{widthPerUnit: 0.3,
-					text:  "Nombre",
-					title: false,
-					style: "B"},
+					text:      "Nombre",
+					centered:  false,
+					textStyle: "B"},
 				{widthPerUnit: 0.2,
-					text:  "GMG",
-					title: false,
-					style: ""},
+					text:      "GMG",
+					centered:  false,
+					textStyle: ""},
 				{widthPerUnit: 0.3,
-					text:  "Fecha",
-					title: false,
-					style: "B"},
+					text:      "Fecha",
+					centered:  false,
+					textStyle: "B"},
 				{widthPerUnit: 0.2,
-					text:  "2024",
-					title: false,
-					style: ""},
+					text:      "2024",
+					centered:  false,
+					textStyle: ""},
 			},
 		},
 	}
@@ -111,7 +114,7 @@ func InitialModel() *model {
 	dm.currCursorCell = 1
 	dm.nextCursorRow = 1
 	dm.nextCursorCell = 1
-	dm.createRows()
+	dm.createRows( /*false*/ )
 
 	return &dm
 }

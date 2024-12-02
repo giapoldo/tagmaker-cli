@@ -1,5 +1,7 @@
 package main
 
+import "slices"
+
 // CursorDown move table cursor down (through rows)
 func (m *model) CursorDown() {
 	if m.currCursorRow+1 <= len(m.tag.table) {
@@ -66,16 +68,52 @@ func (m *model) CursorLeft() {
 	}
 }
 
-// // GetCursorLocation returns the current x,y position of the cursor
-// func (r *Table) GetCursorLocation() (int, int) {
-// 	return r.cursorIndexX, r.cursorIndexY
-// }
+// AddTagRow adds a row below current row sets a tag field to the csv header
+func (m *model) InsertTagRow() {
 
-// // GetCursorValue returns the string of the cell under the cursor
-// func (r *Table) GetCursorValue() string {
-// 	// handle 0 rows situation and when table is not active
-// 	if len(r.filteredRows) == 0 || r.cursorIndexX < 0 || r.cursorIndexY < 0 {
-// 		return ""
-// 	}
-// 	return getStringFromOrdered(r.filteredRows[r.cursorIndexY][r.cursorIndexX])
-// }
+	m.tag.table = slices.Insert(m.tag.table, m.currCursorRow, TagRow{})
+	m.tag.table[m.currCursorRow] = append(
+		m.tag.table[m.currCursorRow],
+		Cell{
+			widthPerUnit: 1.0,
+			text:         "AR",
+			centered:     false,
+			textStyle:    "",
+		})
+	// m.tag.printStructure()
+	m.createRows()
+}
+
+// Add a cell, other cells will reduce their size proportional tu their current
+// ratio to accomodate the new cell
+func (m *model) InsertTagCellLeft(widthPU float64) *model {
+
+	for i, cell := range m.tag.table[m.currCursorRow-1] {
+		m.tag.table[m.currCursorRow-1][i].widthPerUnit = cell.widthPerUnit - cell.widthPerUnit*widthPU
+	}
+	m.tag.table[m.currCursorRow-1] = slices.Insert(m.tag.table[m.currCursorRow-1], m.currCursorCell-1, Cell{
+		widthPerUnit: widthPU,
+		text:         "ACL",
+		centered:     false,
+		textStyle:    "",
+	})
+	m.createRows()
+	return m
+}
+
+func (m *model) InsertTagCellRight(widthPU float64) *model {
+
+	for i, cell := range m.tag.table[m.currCursorRow-1] {
+		m.tag.table[m.currCursorRow-1][i].widthPerUnit = cell.widthPerUnit - cell.widthPerUnit*widthPU
+	}
+	m.tag.table[m.currCursorRow-1] = slices.Insert(m.tag.table[m.currCursorRow], m.currCursorCell, Cell{
+		widthPerUnit: widthPU,
+		text:         "ACR",
+		centered:     false,
+		textStyle:    "",
+	})
+	m.createRows()
+	return m
+}
+
+// // BindData sets a tag field to a CSV column data and skips the header

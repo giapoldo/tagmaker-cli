@@ -44,40 +44,44 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "right":
 			m.CursorRight()
 
-			// // The "enter" key and the spacebar (a literal space) toggle
-			// // the selected state for the item that the cursor is pointing at.
-			// case "enter", " ":
-			// 	_, ok := m.selected[m.cursor]
-			// 	if ok {
-			// 		delete(m.selected, m.cursor)
-			// 	} else {
-			// 		m.selected[m.cursor] = struct{}{}
-			// 	}
+		// // The the spacebar (a literal space) add a row to the tag
+		case "r":
+			m.InsertTagRow()
+
+		case "c":
+			/*err :=*/ m.InsertTagCellLeft(0.5)
+			// if err != nil {
+			// 	fmt.Println("fatal:", err)
+			// 	os.Exit(1)
+			// }
+
+		case "v":
+			/*err :=*/ m.InsertTagCellRight(0.5)
+			// if err != nil {
+			// 	fmt.Println("fatal:", err)
+			// 	os.Exit(1)
+			// }
 		}
+
 	}
 
 	return m, nil
 }
 func (m *model) View() string {
 	m.flexBox.ForceRecalculate()
-
-	// for i, row := range m.tag.table {
-	// 	_fbRow := m.flexBox.GetRow(i + 1) // +1 because of row padding
-	// 	if _fbRow == nil {
-	// 		panic("could not find the table row")
-	// 	}
-	// 	for j, cell := range row {
-	// 		_cell := _fbRow.GetCell(j + 1).SetContent(cell.text) // +1 because of cell padding
-	// 		if _cell == nil {
-	// 			panic("could not find the table cell")
-	// 		}
-	// 	}
-	// }
-
 	return m.flexBox.Render()
 }
 
 func main() {
+
+	if len(os.Getenv("DEBUG")) > 0 {
+		f, err := tea.LogToFile("debug.log", "debug")
+		if err != nil {
+			fmt.Println("fatal:", err)
+			os.Exit(1)
+		}
+		defer f.Close()
+	}
 
 	p := tea.NewProgram(InitialModel())
 	if _, err := p.Run(); err != nil {
