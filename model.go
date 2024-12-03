@@ -3,25 +3,28 @@ package main
 import (
 	"github.com/76creates/stickers/flexbox"
 	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type model struct {
-	textInput      textinput.Model
-	flexBox        *flexbox.FlexBox
-	tag            Tag
-	currCursorRow  int
-	currCursorCell int
+	textInput           textinput.Model
+	textInputVisibility bool
+	textValue           string
+	inputCaller         string
+	flexBox             *flexbox.FlexBox
+	tag                 Tag
+	currCursorRow       int
+	currCursorCell      int
 }
 
-func (m *model) createRows( /*setRows bool*/ ) {
+func (m *model) createRows(text string) {
 
 	rows := []*flexbox.Row{}
 
-	// Add first padding row before adding tag rows
 	firstRow := m.flexBox.NewRow()
-	firstRow.AddCells(flexbox.NewCell(120, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(120, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(120, 1).SetStyle(styleBG))
+	firstRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG)).
+		AddCells(flexbox.NewCell(100, 1).SetStyle(styleBG)).
+		AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
 	rows = append(rows, firstRow)
 
 	// Add tag rows
@@ -33,9 +36,15 @@ func (m *model) createRows( /*setRows bool*/ ) {
 		}
 		// Add first padding cell before adding content cells
 		_fbRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
+		if len(row) == 1 {
+			row[0].widthPerUnit = 1.0
+		}
+
 		// Add content cells
 		for j, cell := range row {
-			_fbRow.AddCells(flexbox.NewCell(int(cell.widthPerUnit*100), 1).SetStyle(styleNormal))
+			style := m.cellStyleSelector(cell, styleNormal)
+
+			_fbRow.AddCells(flexbox.NewCell(int(cell.widthPerUnit*100), 1).SetStyle(style))
 			_cell := _fbRow.GetCell(j + 1).SetContent(cell.text) // +1 because of cell padding
 			if _cell == nil {
 				panic("could not find the table cell")
@@ -47,43 +56,48 @@ func (m *model) createRows( /*setRows bool*/ ) {
 	}
 	// Add closing padding row
 	lastRow := m.flexBox.NewRow()
-	lastRow.AddCells(flexbox.NewCell(120, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(120, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(120, 1).SetStyle(styleBG))
+	lastRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG)).
+		AddCells(flexbox.NewCell(100, 1).SetStyle(styleBG).SetContent(text)).
+		AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
+
+	if m.textInputVisibility {
+		lastRow.GetCell(1).SetStyle(styleTextInput)
+	}
 	rows = append(rows, lastRow)
 
-	// Highlight the current content row and cell as selected
-	if m.flexBox.RowsLen() > 0 {
-		if m.currCursorRow > 0 || m.currCursorRow < m.flexBox.RowsLen()-1 ||
-			m.currCursorCell > 0 || m.currCursorCell < m.flexBox.GetRow(m.currCursorRow).CellsLen() {
+	m.flexBox.SetRows(rows)
 
-			rows[m.currCursorRow].GetCell(m.currCursorCell).SetStyle(styleSelected)
-		}
+	// Highlight the current content row and cell as selected
+	if (m.currCursorRow > 0 && m.currCursorRow < m.flexBox.RowsLen()-1) &&
+		(m.currCursorCell > 0 && m.currCursorCell < m.flexBox.GetRow(m.currCursorRow).CellsLen()) {
+
+		cell := m.tag.table[m.offsetTableCursorR(0)][m.offsetTableCursorC(0)]
+		style := m.cellStyleSelector(cell, styleSelected)
+		rows[m.currCursorRow].GetCell(m.currCursorCell).SetStyle(style)
 	}
 
 	// SetRows instead of AddRows, since setrows overwrites, and when
 	// calling CreateRows, we always want to overwrite to refresh the view.
-	m.flexBox.SetRows(rows)
 }
 
 func InitialModel() *model {
 
 	dm := model{}
 	dm.flexBox = flexbox.New(0, 0)
-	dm.flexBox.LockRowHeight(4)
+	// dm.flexBox.LockRowHeight(3)
 	dm.tag = Tag{
 		// width:  80.0,
 		// height: 40.0,
 		table: TagTable{
 			{
 				{widthPerUnit: 1.0,
-					text:      "Title 1",
+					text:      "Collection",
 					centered:  true,
 					textStyle: "B"},
 			},
 			{
 				{widthPerUnit: 1.0,
-					text:      "Subtitle",
+					text:      "Milestone",
 					centered:  true,
 					textStyle: ""},
 			}, {
@@ -98,7 +112,7 @@ func InitialModel() *model {
 					centered:  false,
 					textStyle: "B"},
 				{widthPerUnit: 0.5,
-					text:      "UTF8 Dátå 1",
+					text:      "UTF8 1",
 					centered:  false,
 					textStyle: ""},
 			},
@@ -114,20 +128,50 @@ func InitialModel() *model {
 				{widthPerUnit: 0.3,
 					text:      "Fecha",
 					centered:  false,
-					textStyle: "B"},
+					textStyle: "BI"},
 				{widthPerUnit: 0.2,
 					text:      "2024",
 					centered:  false,
-					textStyle: ""},
+					textStyle: "I"},
 			},
 		},
 	}
 
-	// all 4 cursor states start at 1 because of padding rows and cells.
+	// Cursors start at 0 because with nothing selected
 	dm.currCursorRow = 0
 	dm.currCursorCell = 0
 
-	dm.createRows()
+	dm.createRows("")
 
 	return &dm
+}
+
+func (m *model) cellStyleSelector(cell Cell, baseStyle lipgloss.Style) (style lipgloss.Style) {
+
+	style = baseStyle
+
+	if !cell.centered && cell.textStyle == "B" {
+		style = baseStyle.Bold(true)
+
+	} else if !cell.centered && cell.textStyle == "I" {
+		style = baseStyle.Italic(true)
+
+	} else if !cell.centered && cell.textStyle == "BI" {
+		style = baseStyle.Bold(true).Italic(true)
+
+	} else if cell.centered && cell.textStyle == "" {
+		style = baseStyle.AlignHorizontal(lipgloss.Center)
+
+	} else if cell.centered && cell.textStyle == "B" {
+		style = baseStyle.Bold(true).AlignHorizontal(lipgloss.Center)
+
+	} else if cell.centered && cell.textStyle == "I" {
+		style = baseStyle.Italic(true).AlignHorizontal(lipgloss.Center)
+
+	} else if cell.centered && cell.textStyle == "BI" {
+		style = baseStyle.Bold(true).Italic(true).AlignHorizontal(lipgloss.Center)
+
+	}
+
+	return // default baseStyle is always regular font, left aligned and vertical centered
 }

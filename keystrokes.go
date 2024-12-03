@@ -2,12 +2,14 @@ package main
 
 import (
 	"slices"
+	"strconv"
 
 	"github.com/charmbracelet/bubbles/textinput"
 )
 
 // CursorDown move table cursor down (through rows)
 func (m *model) CursorDown() {
+
 	if m.currCursorRow+1 <= len(m.tag.table) {
 
 		nextCursorRow := m.currCursorRow + 1
@@ -88,70 +90,98 @@ func (m *model) InsertTagRow() {
 		m.tag.table[m.offsetTableCursorR(1)],
 		Cell{
 			widthPerUnit: 1.0,
-			text:         "AR",
+			text:         "",
 			centered:     false,
 			textStyle:    "",
 		})
 	// m.tag.printStructure()
-	m.createRows()
+	// m.createRows("")
 }
 
 func (m *model) DeleteTagRow() {
 
-	// delete current row by skipping it in the append
-	m.tag.table = slices.Delete(m.tag.table, m.offsetTableCursorR(0), m.offsetTableCursorR(1))
-	m.createRows()
+	// delete current row only if there are elements in the table to avoid
+	// panic because of empty table
+	if len(m.tag.table) > 1 {
+		m.tag.table = slices.Delete(m.tag.table, m.offsetTableCursorR(0), m.offsetTableCursorR(1))
+
+		if m.currCursorRow >= len(m.tag.table) {
+			m.currCursorRow = len(m.tag.table)
+		}
+
+		// Offset 0 because currCursorRow is already updated
+		if m.currCursorCell > len(m.tag.table[m.offsetTableCursorR(0)]) {
+			m.currCursorCell = len(m.tag.table[m.offsetTableCursorR(0)])
+		}
+	}
+
 }
 
 // Add a cell, other cells will reduce their size proportional tu their current
 // ratio to accomodate the new cell
-func (m *model) InsertTagCellLeft(widthPU float64) *model {
+func (m *model) InsertTagCellLeft() {
 
 	m.setCursor() // sanity
 
-	for i, cell := range m.tag.table[m.offsetTableCursorR(0)] {
-		m.tag.table[m.offsetTableCursorR(0)][i].widthPerUnit = cell.widthPerUnit - cell.widthPerUnit*widthPU
+	widthPU := m.getCellInputValue()
+	// widthPU, _ := strconv.ParseFloat(m.getCellInputValue(), 64)
+
+	if widthPU != 0.0 {
+		for i, cell := range m.tag.table[m.offsetTableCursorR(0)] {
+			m.tag.table[m.offsetTableCursorR(0)][i].widthPerUnit = cell.widthPerUnit - cell.widthPerUnit*widthPU
+		}
+		m.tag.table[m.offsetTableCursorR(0)] = slices.Insert(m.tag.table[m.offsetTableCursorR(0)], m.offsetTableCursorC(0), Cell{
+			widthPerUnit: widthPU,
+			text:         "",
+			centered:     false,
+			textStyle:    "",
+		})
+		// m.createRows("")
 	}
-	m.tag.table[m.offsetTableCursorR(0)] = slices.Insert(m.tag.table[m.offsetTableCursorR(0)], m.offsetTableCursorC(0), Cell{
-		widthPerUnit: widthPU,
-		text:         "",
-		centered:     false,
-		textStyle:    "",
-	})
-	m.createRows()
-	return m
 }
 
-func (m *model) InsertTagCellRight(widthPU float64) *model {
+func (m *model) InsertTagCellRight() {
 
 	m.setCursor() // sanity
-	m.userInput()
+	widthPU := m.getCellInputValue()
+	// widthPU, _ := strconv.ParseFloat(m.getCellInputValue(), 64)
 
-	for i, cell := range m.tag.table[m.offsetTableCursorR(0)] {
-		m.tag.table[m.offsetTableCursorR(0)][i].widthPerUnit = cell.widthPerUnit - cell.widthPerUnit*widthPU
+	if widthPU != 0.0 {
+		for i, cell := range m.tag.table[m.offsetTableCursorR(0)] {
+			m.tag.table[m.offsetTableCursorR(0)][i].widthPerUnit = cell.widthPerUnit - cell.widthPerUnit*widthPU
+		}
+		m.tag.table[m.offsetTableCursorR(0)] = slices.Insert(m.tag.table[m.offsetTableCursorR(0)], m.offsetTableCursorC(1), Cell{
+			widthPerUnit: widthPU,
+			text:         "",
+			centered:     false,
+			textStyle:    "",
+		})
 	}
-	m.tag.table[m.offsetTableCursorR(0)] = slices.Insert(m.tag.table[m.offsetTableCursorR(0)], m.offsetTableCursorC(0), Cell{
-		widthPerUnit: widthPU,
-		text:         "",
-		centered:     false,
-		textStyle:    "",
-	})
-	m.createRows()
-	return m
 }
 
 func (m *model) DeleteTagCell() {
 
-	row := m.tag.table[m.offsetTableCursorR(0)]
-	widthPU := row[m.offsetTableCursorC(0)].widthPerUnit
-	for i, cell := range m.tag.table[m.offsetTableCursorR(0)] {
-		m.tag.table[m.offsetTableCursorR(0)][i].widthPerUnit = cell.widthPerUnit + cell.widthPerUnit*widthPU
+	if len(m.tag.table[m.offsetTableCursorR(0)]) == 1 {
+		m.DeleteTagRow()
+	} else {
+
+		row := m.tag.table[m.offsetTableCursorR(0)]
+		row = slices.Delete(row, m.offsetTableCursorC(0), m.offsetTableCursorC(1))
+
+		// widthPU := row[m.offsetTableCursorC(0)].widthPerUnit
+		lenResizedRow := 0.0
+
+		for _, cell := range m.tag.table[m.offsetTableCursorR(0)] {
+			lenResizedRow += cell.widthPerUnit
+		}
+
+		for i, cell := range m.tag.table[m.offsetTableCursorR(0)] {
+			m.tag.table[m.offsetTableCursorR(0)][i].widthPerUnit = cell.widthPerUnit / float64(lenResizedRow)
+		}
+
+		m.tag.table[m.offsetTableCursorR(0)] = row
+		// m.createRows("")
 	}
-
-	row = slices.Delete(row, m.offsetTableCursorC(0), m.offsetTableCursorC(1))
-
-	m.tag.table[m.offsetTableCursorR(0)] = row
-	m.createRows()
 }
 
 func (m *model) setCursor() {
@@ -162,7 +192,7 @@ func (m *model) setCursor() {
 	if m.currCursorRow == 0 {
 		m.currCursorRow = 1
 	}
-	m.createRows()
+	// m.createRows("")
 }
 
 // Offset forwards or backwards from present table cursor (-1 off from currCursor)
@@ -174,14 +204,28 @@ func (m *model) offsetTableCursorC(offset int) int {
 	return (m.currCursorCell - 1) + offset
 }
 
-func (m *model) userInput() string {
-
+// Set if choosing size of cell or binding data? Options arw "cell" and "binding"
+func (m *model) SetCellInput(caller string) {
+	m.textInputVisibility = true
+	m.inputCaller = caller
 	ti := textinput.New()
-	ti.Placeholder = "Enter width %"
+	ti.Placeholder = "Enter width per unit (0.20~0.80) and press Enter"
 	ti.Focus()
-	ti.CharLimit = 3
+	ti.CharLimit = 156
 	ti.Width = 20
-
 	m.textInput = ti
-	return ""
+}
+
+func (m *model) UnSetUserInput() {
+	m.textInputVisibility = false
+}
+
+func (m *model) getCellInputValue() float64 {
+
+	inputValue, _ := strconv.ParseFloat(m.textInput.Value(), 64)
+
+	if inputValue > 0.1 && inputValue <= 0.8 {
+		return inputValue
+	}
+	return 0.0
 }
