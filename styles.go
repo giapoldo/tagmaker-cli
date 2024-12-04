@@ -27,3 +27,37 @@ var styleSelected = lipgloss.NewStyle().
 	BorderForeground(lipgloss.Color("#000000")).
 	Bold(false).Italic(false).
 	Align(lipgloss.Left, lipgloss.Center)
+
+var styleHelp = lipgloss.NewStyle().
+	Bold(false).Italic(false).
+	Align(lipgloss.Center, lipgloss.Center)
+
+func (m *model) cellStyleSelector(cell Cell, baseStyle lipgloss.Style) (style lipgloss.Style) {
+
+	style = baseStyle
+
+	if !cell.centered && cell.textStyle == "B" {
+		style = baseStyle.Bold(true)
+
+	} else if !cell.centered && cell.textStyle == "I" {
+		style = baseStyle.Italic(true)
+
+	} else if !cell.centered && cell.textStyle == "BI" {
+		style = baseStyle.Bold(true).Italic(true)
+
+	} else if cell.centered && cell.textStyle == "" {
+		style = baseStyle.AlignHorizontal(lipgloss.Center)
+
+	} else if cell.centered && cell.textStyle == "B" {
+		style = baseStyle.Bold(true).AlignHorizontal(lipgloss.Center)
+
+	} else if cell.centered && cell.textStyle == "I" {
+		style = baseStyle.Italic(true).AlignHorizontal(lipgloss.Center)
+
+	} else if cell.centered && cell.textStyle == "BI" {
+		style = baseStyle.Bold(true).Italic(true).AlignHorizontal(lipgloss.Center)
+
+	}
+
+	return // default baseStyle is always regular font, left aligned and vertical centered
+}

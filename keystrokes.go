@@ -173,39 +173,35 @@ func (m *model) InsertTagCellRight() {
 
 func (m *model) DeleteTagCell() {
 
-	if len(m.tag.table[m.currCursorRow]) == 1 {
-		m.DeleteTagRow()
-	} else {
+	var row TagRow
 
+	if lenRow := len(m.tag.table[m.currCursorRow]); lenRow == 1 {
+		m.DeleteTagRow()
+		return
+	} else if m.currCursorCell == lenRow-1 {
+		// Just remove the end element
+		row = m.tag.table[m.currCursorRow][:lenRow-1]
+		m.currCursorCell = len(row) - 1
+	} else {
 		nextCursorCell := m.currCursorCell + 1
 
-		row := m.tag.table[m.currCursorRow]
+		row = m.tag.table[m.currCursorRow]
 		row = slices.Delete(row, m.currCursorCell, nextCursorCell)
-
-		lenResizedRow := 0.0
-		for _, cell := range m.tag.table[m.currCursorRow] {
-			lenResizedRow += cell.widthPerUnit
-		}
-
-		for i, cell := range m.tag.table[m.currCursorRow] {
-			m.tag.table[m.currCursorRow][i].widthPerUnit = cell.widthPerUnit / float64(lenResizedRow)
-		}
-
-		m.tag.table[m.currCursorRow] = row
-		// m.createRows("")
 	}
+	m.tag.table[m.currCursorRow] = row
+
+	lenResizedRow := 0.0
+	for _, cell := range m.tag.table[m.currCursorRow] {
+		lenResizedRow += cell.widthPerUnit
+	}
+
+	for i, cell := range m.tag.table[m.currCursorRow] {
+		m.tag.table[m.currCursorRow][i].widthPerUnit = cell.widthPerUnit / float64(lenResizedRow)
+	}
+
+	// m.createRows("")
+
 }
-
-// func (m *model) setCursor() {
-// 	if m.currCursorCell < 0 {
-// 		m.currCursorCell = 0
-// 	}
-
-// 	if m.currCursorRow < 0 {
-// 		m.currCursorRow = 0
-// 	}
-// 	// m.createRows("")
-// }
 
 // Set if choosing size of cell or binding data? Options arw "cell" and "binding"
 func (m *model) SetCellInput(caller string) {
@@ -262,4 +258,8 @@ func (m *model) FBCursorCell() int {
 func (m *model) FBCursorCellFromRef(ref int) int {
 
 	return ref + 1
+}
+
+func (m *model) BindCSVDataToTag() {
+
 }
