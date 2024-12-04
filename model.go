@@ -68,12 +68,12 @@ func (m *model) createRows(text string) {
 	m.flexBox.SetRows(rows)
 
 	// Highlight the current content row and cell as selected
-	if (m.currCursorRow > 0 && m.currCursorRow < m.flexBox.RowsLen()-1) &&
-		(m.currCursorCell > 0 && m.currCursorCell < m.flexBox.GetRow(m.currCursorRow).CellsLen()) {
+	if (m.currCursorRow >= 0 && m.currCursorRow < len(m.tag.table)) &&
+		(m.currCursorCell >= 0 && m.currCursorCell < len(m.tag.table[m.currCursorRow])) {
 
-		cell := m.tag.table[m.offsetTableCursorR(0)][m.offsetTableCursorC(0)]
+		cell := m.tag.table[m.currCursorRow][m.currCursorCell]
 		style := m.cellStyleSelector(cell, styleSelected)
-		rows[m.currCursorRow].GetCell(m.currCursorCell).SetStyle(style)
+		rows[m.FBCursorRow()].GetCell(m.FBCursorCell()).SetStyle(style)
 	}
 
 	// SetRows instead of AddRows, since setrows overwrites, and when
@@ -137,7 +137,7 @@ func InitialModel() *model {
 		},
 	}
 
-	// Cursors start at 0 because with nothing selected
+	// Cursors start at -1 to avoid starting with a cell selected
 	dm.currCursorRow = 0
 	dm.currCursorCell = 0
 
