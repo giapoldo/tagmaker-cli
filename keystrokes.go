@@ -12,23 +12,23 @@ func (m *model) CursorDown() {
 
 	// m.setCursor()
 
-	if m.currCursorRow+1 < len(m.tag.table) {
+	if m.tagCursorRow+1 < len(m.tag.table) {
 
-		nextCursorRow := m.currCursorRow + 1
+		nextCursorRow := m.tagCursorRow + 1
 		nextRowLen := len(m.tag.table[nextCursorRow])
 
 		var nextCursorCell int
-		if m.currCursorCell >= nextRowLen {
+		if m.tagCursorCell >= nextRowLen {
 			nextCursorCell = nextRowLen - 1
 		} else {
-			nextCursorCell = m.currCursorCell
+			nextCursorCell = m.tagCursorCell
 		}
 
 		m.flexBox.GetRow(m.FBCursorRow()).GetCell(m.FBCursorCell()).SetStyle(styleNormal)
 		m.flexBox.GetRow(m.FBCursorRowFromRef(nextCursorRow)).GetCell(m.FBCursorCellFromRef(nextCursorCell)).SetStyle(styleSelected)
 
-		m.currCursorRow = nextCursorRow
-		m.currCursorCell = nextCursorCell
+		m.tagCursorRow = nextCursorRow
+		m.tagCursorCell = nextCursorCell
 	}
 }
 
@@ -37,24 +37,24 @@ func (m *model) CursorUp() {
 
 	// m.setCursor()
 
-	if m.currCursorRow > 0 { // 1 because of padding row
+	if m.tagCursorRow > 0 { // 1 because of padding row
 
-		nextCursorRow := m.currCursorRow - 1
+		nextCursorRow := m.tagCursorRow - 1
 		nextRowLen := len(m.tag.table[nextCursorRow])
 
 		var nextCursorCell int
 
-		if m.currCursorCell >= nextRowLen {
+		if m.tagCursorCell >= nextRowLen {
 			nextCursorCell = nextRowLen - 1
 		} else {
-			nextCursorCell = m.currCursorCell
+			nextCursorCell = m.tagCursorCell
 		}
 
 		m.flexBox.GetRow(m.FBCursorRow()).GetCell(m.FBCursorCell()).SetStyle(styleNormal)
 		m.flexBox.GetRow(m.FBCursorRowFromRef(nextCursorRow)).GetCell(m.FBCursorCellFromRef(nextCursorCell)).SetStyle(styleSelected)
 
-		m.currCursorRow = nextCursorRow
-		m.currCursorCell = nextCursorCell
+		m.tagCursorRow = nextCursorRow
+		m.tagCursorCell = nextCursorCell
 	}
 }
 
@@ -63,14 +63,14 @@ func (m *model) CursorRight() {
 
 	// m.setCursor()
 
-	if m.currCursorCell+1 < len(m.tag.table[m.currCursorRow]) {
+	if m.tagCursorCell+1 < len(m.tag.table[m.tagCursorRow]) {
 
-		nextCursorCell := m.currCursorCell + 1
+		nextCursorCell := m.tagCursorCell + 1
 
 		m.flexBox.GetRow(m.FBCursorRow()).GetCell(m.FBCursorCell()).SetStyle(styleNormal)
 		m.flexBox.GetRow(m.FBCursorRow()).GetCell(m.FBCursorCellFromRef(nextCursorCell)).SetStyle(styleSelected)
 
-		m.currCursorCell = nextCursorCell
+		m.tagCursorCell = nextCursorCell
 	}
 }
 
@@ -79,21 +79,21 @@ func (m *model) CursorLeft() {
 
 	// m.setCursor()
 
-	if m.currCursorCell > 0 {
+	if m.tagCursorCell > 0 {
 
-		nextCursorCell := m.currCursorCell - 1
+		nextCursorCell := m.tagCursorCell - 1
 
 		m.flexBox.GetRow(m.FBCursorRow()).GetCell(m.FBCursorCell()).SetStyle(styleNormal)
 		m.flexBox.GetRow(m.FBCursorRow()).GetCell(m.FBCursorCellFromRef(nextCursorCell)).SetStyle(styleSelected)
 
-		m.currCursorCell = nextCursorCell
+		m.tagCursorCell = nextCursorCell
 	}
 }
 
 // AddTagRow adds a row below current row sets a tag field to the csv header
 func (m *model) InsertTagRow() {
 
-	nextCursorRow := m.currCursorRow + 1
+	nextCursorRow := m.tagCursorRow + 1
 
 	m.tag.table = slices.Insert(m.tag.table, nextCursorRow, TagRow{})
 
@@ -105,7 +105,7 @@ func (m *model) InsertTagRow() {
 			textStyle:    "",
 		})
 	// m.tag.printStructure()
-	// m.createRows("")
+	// m.TagView("")
 }
 
 func (m *model) DeleteTagRow() {
@@ -114,15 +114,15 @@ func (m *model) DeleteTagRow() {
 	// panic because of empty table
 	if len(m.tag.table) > 1 {
 
-		nextCursorRow := m.currCursorRow + 1
-		m.tag.table = slices.Delete(m.tag.table, m.currCursorRow, nextCursorRow)
+		nextCursorRow := m.tagCursorRow + 1
+		m.tag.table = slices.Delete(m.tag.table, m.tagCursorRow, nextCursorRow)
 
-		if m.currCursorRow >= len(m.tag.table) {
-			m.currCursorRow = len(m.tag.table) - 1
+		if m.tagCursorRow >= len(m.tag.table) {
+			m.tagCursorRow = len(m.tag.table) - 1
 		}
 
-		if m.currCursorCell >= len(m.tag.table[m.currCursorRow]) {
-			m.currCursorCell = len(m.tag.table[m.currCursorRow]) - 1
+		if m.tagCursorCell >= len(m.tag.table[m.tagCursorRow]) {
+			m.tagCursorCell = len(m.tag.table[m.tagCursorRow]) - 1
 		}
 	}
 
@@ -138,16 +138,16 @@ func (m *model) InsertTagCellLeft() {
 	// widthPU, _ := strconv.ParseFloat(m.getCellInputValue(), 64)
 
 	if widthPU != 0.0 {
-		for i, cell := range m.tag.table[m.currCursorRow] {
-			m.tag.table[m.currCursorRow][i].widthPerUnit = cell.widthPerUnit - cell.widthPerUnit*widthPU
+		for i, cell := range m.tag.table[m.tagCursorRow] {
+			m.tag.table[m.tagCursorRow][i].widthPerUnit = cell.widthPerUnit - cell.widthPerUnit*widthPU
 		}
-		m.tag.table[m.currCursorRow] = slices.Insert(m.tag.table[m.currCursorRow], m.currCursorCell, Cell{
+		m.tag.table[m.tagCursorRow] = slices.Insert(m.tag.table[m.tagCursorRow], m.tagCursorCell, Cell{
 			widthPerUnit: widthPU,
 			text:         "",
 			centered:     false,
 			textStyle:    "",
 		})
-		// m.createRows("")
+		// m.TagView("")
 	}
 }
 
@@ -158,11 +158,11 @@ func (m *model) InsertTagCellRight() {
 	// widthPU, _ := strconv.ParseFloat(m.getCellInputValue(), 64)
 
 	if widthPU != 0.0 {
-		for i, cell := range m.tag.table[m.currCursorRow] {
-			m.tag.table[m.currCursorRow][i].widthPerUnit = cell.widthPerUnit - cell.widthPerUnit*widthPU
+		for i, cell := range m.tag.table[m.tagCursorRow] {
+			m.tag.table[m.tagCursorRow][i].widthPerUnit = cell.widthPerUnit - cell.widthPerUnit*widthPU
 		}
-		nextCursorCell := m.currCursorCell + 1
-		m.tag.table[m.currCursorRow] = slices.Insert(m.tag.table[m.currCursorRow], nextCursorCell, Cell{
+		nextCursorCell := m.tagCursorCell + 1
+		m.tag.table[m.tagCursorRow] = slices.Insert(m.tag.table[m.tagCursorRow], nextCursorCell, Cell{
 			widthPerUnit: widthPU,
 			text:         "",
 			centered:     false,
@@ -175,38 +175,38 @@ func (m *model) DeleteTagCell() {
 
 	var row TagRow
 
-	if lenRow := len(m.tag.table[m.currCursorRow]); lenRow == 1 {
+	if lenRow := len(m.tag.table[m.tagCursorRow]); lenRow == 1 {
 		m.DeleteTagRow()
 		return
-	} else if m.currCursorCell == lenRow-1 {
+	} else if m.tagCursorCell == lenRow-1 {
 		// Just remove the end element
-		row = m.tag.table[m.currCursorRow][:lenRow-1]
-		m.currCursorCell = len(row) - 1
+		row = m.tag.table[m.tagCursorRow][:lenRow-1]
+		m.tagCursorCell = len(row) - 1
 	} else {
-		nextCursorCell := m.currCursorCell + 1
+		nextCursorCell := m.tagCursorCell + 1
 
-		row = m.tag.table[m.currCursorRow]
-		row = slices.Delete(row, m.currCursorCell, nextCursorCell)
+		row = m.tag.table[m.tagCursorRow]
+		row = slices.Delete(row, m.tagCursorCell, nextCursorCell)
 	}
-	m.tag.table[m.currCursorRow] = row
+	m.tag.table[m.tagCursorRow] = row
 
 	lenResizedRow := 0.0
-	for _, cell := range m.tag.table[m.currCursorRow] {
+	for _, cell := range m.tag.table[m.tagCursorRow] {
 		lenResizedRow += cell.widthPerUnit
 	}
 
-	for i, cell := range m.tag.table[m.currCursorRow] {
-		m.tag.table[m.currCursorRow][i].widthPerUnit = cell.widthPerUnit / float64(lenResizedRow)
+	for i, cell := range m.tag.table[m.tagCursorRow] {
+		m.tag.table[m.tagCursorRow][i].widthPerUnit = cell.widthPerUnit / float64(lenResizedRow)
 	}
 
-	// m.createRows("")
+	// m.TagView("")
 
 }
 
 // Set if choosing size of cell or binding data? Options arw "cell" and "binding"
-func (m *model) SetCellInput(caller string) {
-	m.textInputVisibility = true
-	m.inputCaller = caller
+func (m *model) SetCellInput(callerFunc caller) {
+	m.withTextInput = true
+	m.inputCaller = callerFunc
 	ti := textinput.New()
 	ti.Placeholder = "Enter width per unit (0.20~0.80) and press Enter"
 	ti.Focus()
@@ -216,7 +216,7 @@ func (m *model) SetCellInput(caller string) {
 }
 
 func (m *model) UnSetUserInput() {
-	m.textInputVisibility = false
+	m.withTextInput = false
 }
 
 func (m *model) getCellInputValue() float64 {
@@ -229,20 +229,11 @@ func (m *model) getCellInputValue() float64 {
 	return 0.0
 }
 
-// // Offset forwards or backwards from present table cursor (-1 off from currCursor)
-// func (m *model) offsetTableCursorR(offset int) int {
-// 	return (m.currCursorRow - 1) + offset
-// }
-
-// func (m *model) calcTableCursorC(offset int) int {
-// 	return (m.currCursorCell - 1) + offset
-// }
-
 // Flexbox cursor is always calculated from the table, it cannot go out of
 // bound because the flexbox is always padded and bigger than the data table.
 func (m *model) FBCursorRow() int {
 
-	return m.currCursorRow + 1
+	return m.tagCursorRow + 1
 }
 
 func (m *model) FBCursorRowFromRef(ref int) int {
@@ -252,7 +243,7 @@ func (m *model) FBCursorRowFromRef(ref int) int {
 
 func (m *model) FBCursorCell() int {
 
-	return m.currCursorCell + 1
+	return m.tagCursorCell + 1
 }
 
 func (m *model) FBCursorCellFromRef(ref int) int {

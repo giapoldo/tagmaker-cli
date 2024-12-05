@@ -24,3 +24,22 @@ func readCSVFile(filename string) ([]string, [][]string, error) {
 
 	return headers, rows, err
 }
+
+func (csv *CSVData) GetCSVData(csvHeaders []string, csvData [][]string) {
+
+	// Detect headings from no data
+	for i, header := range csvHeaders {
+
+		if csvData[i][0] == "" {
+			csv.headings[i] = header
+		}
+	}
+
+	csv.headers = csvHeaders[len(csv.headings):]
+
+	for i, data := range csvData {
+		data = data[len(csv.headings):]
+		copy(csv.data[i], data)
+	}
+
+}

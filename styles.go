@@ -28,6 +28,15 @@ var styleSelected = lipgloss.NewStyle().
 	Bold(false).Italic(false).
 	Align(lipgloss.Left, lipgloss.Center)
 
+var styleWelcome = lipgloss.NewStyle().
+	Background(lipgloss.Color("#43A5BE")).
+	Foreground(lipgloss.Color("#000000")).
+	Border(lipgloss.NormalBorder(), true, true, true, true). // each row handles their top border
+	BorderBackground(lipgloss.Color("#43A5BE")).
+	BorderForeground(lipgloss.Color("#000000")).
+	Bold(false).Italic(false).
+	Align(lipgloss.Center, lipgloss.Center)
+
 var styleHelp = lipgloss.NewStyle().
 	Bold(false).Italic(false).
 	Align(lipgloss.Center, lipgloss.Center)
