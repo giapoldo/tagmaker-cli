@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -12,6 +14,12 @@ var styleNormal = lipgloss.NewStyle().
 	BorderForeground(lipgloss.Color("#000000")).
 	Bold(false).Italic(false).
 	Align(lipgloss.Left, lipgloss.Center)
+
+var styleBindList = lipgloss.NewStyle().
+	Background(lipgloss.Color("#888888")).
+	Foreground(lipgloss.Color("#000000")).
+	Bold(false).Italic(false).
+	Align(lipgloss.Center, lipgloss.Center)
 
 var styleBG = lipgloss.NewStyle().Background(lipgloss.Color("#888888"))
 var styleTextInput = lipgloss.NewStyle().
@@ -41,7 +49,7 @@ var styleHelp = lipgloss.NewStyle().
 	Bold(false).Italic(false).
 	Align(lipgloss.Center, lipgloss.Center)
 
-func (m *model) cellStyleSelector(cell Cell, baseStyle lipgloss.Style) (style lipgloss.Style) {
+func (m *model) getCellTextStyle(cell cell, baseStyle lipgloss.Style) (style lipgloss.Style) {
 
 	style = baseStyle
 
@@ -69,4 +77,49 @@ func (m *model) cellStyleSelector(cell Cell, baseStyle lipgloss.Style) (style li
 	}
 
 	return // default baseStyle is always regular font, left aligned and vertical centered
+}
+
+func (m *model) toggleBold() {
+
+	cell := m.tag.tagTable[m.tagRowCursor][m.tagCellCursor]
+
+	if cell.textStyle == "B" {
+		cell.textStyle = ""
+	} else if cell.textStyle == "I" {
+		cell.textStyle = "BI"
+	} else if cell.textStyle == "BI" {
+		cell.textStyle = "I"
+	} else if cell.textStyle == "" {
+		cell.textStyle = "B"
+	}
+
+	m.tag.tagTable[m.tagRowCursor][m.tagCellCursor] = cell
+	log.Print(m.tag.tagTable[m.tagRowCursor][m.tagCellCursor])
+}
+
+func (m *model) toggleItalic() {
+
+	cell := m.tag.tagTable[m.tagRowCursor][m.tagCellCursor]
+
+	if cell.textStyle == "I" {
+		cell.textStyle = ""
+	} else if cell.textStyle == "B" {
+		cell.textStyle = "BI"
+	} else if cell.textStyle == "BI" {
+		cell.textStyle = "B"
+	} else if cell.textStyle == "" {
+		cell.textStyle = "I"
+	}
+	m.tag.tagTable[m.tagRowCursor][m.tagCellCursor] = cell
+
+}
+
+func (m *model) toggleCentered() {
+
+	cell := m.tag.tagTable[m.tagRowCursor][m.tagCellCursor]
+
+	cell.centered = !cell.centered
+
+	m.tag.tagTable[m.tagRowCursor][m.tagCellCursor] = cell
+
 }

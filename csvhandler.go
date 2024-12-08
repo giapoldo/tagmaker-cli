@@ -5,41 +5,37 @@ import (
 	"os"
 )
 
-func readCSVFile(filename string) ([]string, [][]string, error) {
+func (m *model) readCSVFile() {
 	// read in CSV data
-	f, err := os.Open(filename)
+	f, err := os.Open("Input/data.csv")
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
 
 	csvReader := csv.NewReader(f)
-	data, err := csvReader.ReadAll()
+	csvData, err := csvReader.ReadAll()
+
 	if err != nil {
 		panic(err)
 	}
 
-	headers := data[0]
-	rows := data[1:]
+	headers := csvData[0] // []string
+	rows := csvData[1:]   // [][]string
 
-	return headers, rows, err
-}
+	m.csvData.headers = headers
+	m.csvData.rows = make([]map[string]string, 0, len(rows))
+	// rows := []map[string]string{}
 
-func (csv *CSVData) GetCSVData(csvHeaders []string, csvData [][]string) {
-
-	// Detect headings from no data
-	for i, header := range csvHeaders {
-
-		if csvData[i][0] == "" {
-			csv.headings[i] = header
+	for _, data := range rows {
+		csvData := map[string]string{}
+		for j, header := range headers {
+			csvData[header] = data[j]
 		}
+		m.csvData.rows = append(m.csvData.rows, csvData)
 	}
 
-	csv.headers = csvHeaders[len(csv.headings):]
-
-	for i, data := range csvData {
-		data = data[len(csv.headings):]
-		copy(csv.data[i], data)
-	}
+	// m.csvData.headers = append(m.csvData.headers, csvData[0]...)
+	// m.csvData.data = append(m.csvData.data, csvData[1:]...)
 
 }

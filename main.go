@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -17,17 +16,26 @@ func (m *model) Init() tea.Cmd {
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch m.currentView {
-	case WelcomeView:
-		return m.WelcomeKeys(msg)
-	case TagView:
-		if m.withTextInput {
-			return m.TextInputKeys(msg)
-		} else {
-			return m.TagBuilderKeys(msg)
+	case welcome1View:
+		return m.welcomeKeys(msg)
+	case welcome2View:
+		return m.welcomeKeys(msg)
+	case tagBuilderView:
+		switch m.updateType {
+		case normal:
+			return m.tagBuilderKeys(msg)
+		case textInput:
+			return m.textInputKeys(msg)
 		}
-	case BuildView:
-	case FileLoaderView:
-	case PrintView:
+	case dataBinderView:
+		return m.dataBindKeys(msg)
+	case tagViewerView:
+		switch m.updateType {
+		case normal:
+			return m.tagViewerKeys(msg)
+		case textInput:
+			return m.textInputKeys(msg)
+		}
 	}
 	return m, nil
 }
@@ -37,19 +45,38 @@ func (m *model) View() string {
 	s := ""
 
 	switch m.currentView {
-	case WelcomeView:
-		m.WelcomeView()
-		s = fmt.Sprint(m.flexBox.Render())
-	case TagView:
-		if m.withTextInput {
-			m.TagView(m.textInput.View())
-		} else {
-			m.TagView("")
+	case welcome1View:
+		m.welcome1View()
+		s += fmt.Sprint(m.flexBox.Render())
+	case welcome2View:
+		m.welcome2View()
+		s += fmt.Sprint(m.flexBox.Render())
+	case tagBuilderView:
+		switch m.updateType {
+		case normal:
+			m.tagBuilderView("")
+		case textInput:
+			m.tagBuilderView(m.textInput.View())
 		}
-		s = fmt.Sprint(m.flexBox.Render())
-	case BuildView:
-	case FileLoaderView:
-	case PrintView:
+		s += fmt.Sprint(m.flexBox.Render())
+
+	case dataBinderView:
+		if m.lastCSVHeaderIdx+1 == m.currentCSVHeaderIdx {
+			m.dataBinderView(m.csvData.headers[m.currentCSVHeaderIdx])
+		} else if m.lastCSVHeaderIdx == m.currentCSVHeaderIdx {
+			m.dataBinderView(fmt.Sprintf("%s data", m.csvData.headers[m.currentCSVHeaderIdx]))
+		}
+		s += fmt.Sprint(m.flexBox.Render())
+
+	case tagViewerView:
+		switch m.updateType {
+		case normal:
+			m.tagViewerView("")
+		case textInput:
+			m.tagViewerView(m.textInput.View())
+		}
+		s += fmt.Sprint(m.flexBox.Render())
+
 	}
 	return s
 }
@@ -63,17 +90,6 @@ func main() {
 		os.Exit(1)
 	}
 	defer f.Close()
-
-	csvData := CSVData{}
-
-	csvData.headers = make([]string, 0)
-	csvData.data = make([][]string, 0)
-
-	csvData.headers, csvData.data, err = readCSVFile("tagdata.csv")
-
-	if err != nil {
-		log.Println(fmt.Errorf("%w", err))
-	}
 
 	p := tea.NewProgram(InitialModel())
 	if _, err := p.Run(); err != nil {
