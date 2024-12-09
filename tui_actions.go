@@ -24,8 +24,8 @@ func (m *model) tagCursorDown() {
 			nextCellCursor = m.tagCellCursor
 		}
 
-		m.flexBox.GetRow(m.fbTagRowCursor()).GetCell(m.fbTagCellCursor()).SetStyle(styleNormal)
-		m.flexBox.GetRow(m.fbTagRowCursorFromRef(nextRowCursor)).GetCell(m.fbTagCellCursorFromRef(nextCellCursor)).SetStyle(styleSelected)
+		// m.flexBox.GetRow(m.fbTagRowCursor()).GetCell(m.fbTagCellCursor()).SetStyle(styleNormal)
+		// m.flexBox.GetRow(m.fbTagRowCursorFromRef(nextRowCursor)).GetCell(m.fbTagCellCursorFromRef(nextCellCursor)).SetStyle(styleSelected)
 
 		m.tagRowCursor = nextRowCursor
 		m.tagCellCursor = nextCellCursor
@@ -50,8 +50,8 @@ func (m *model) tagCursorUp() {
 			nextCellCursor = m.tagCellCursor
 		}
 
-		m.flexBox.GetRow(m.fbTagRowCursor()).GetCell(m.fbTagCellCursor()).SetStyle(styleNormal)
-		m.flexBox.GetRow(m.fbTagRowCursorFromRef(nextRowCursor)).GetCell(m.fbTagCellCursorFromRef(nextCellCursor)).SetStyle(styleSelected)
+		// m.flexBox.GetRow(m.fbTagRowCursor()).GetCell(m.fbTagCellCursor()).SetStyle(styleNormal)
+		// m.flexBox.GetRow(m.fbTagRowCursorFromRef(nextRowCursor)).GetCell(m.fbTagCellCursorFromRef(nextCellCursor)).SetStyle(styleSelected)
 
 		m.tagRowCursor = nextRowCursor
 		m.tagCellCursor = nextCellCursor
@@ -67,8 +67,8 @@ func (m *model) tagCursorRight() {
 
 		nextCellCursor := m.tagCellCursor + 1
 
-		m.flexBox.GetRow(m.fbTagRowCursor()).GetCell(m.fbTagCellCursor()).SetStyle(styleNormal)
-		m.flexBox.GetRow(m.fbTagRowCursor()).GetCell(m.fbTagCellCursorFromRef(nextCellCursor)).SetStyle(styleSelected)
+		// m.flexBox.GetRow(m.fbTagRowCursor()).GetCell(m.fbTagCellCursor()).SetStyle(styleNormal)
+		// m.flexBox.GetRow(m.fbTagRowCursor()).GetCell(m.fbTagCellCursorFromRef(nextCellCursor)).SetStyle(styleSelected)
 
 		m.tagCellCursor = nextCellCursor
 	}
@@ -83,8 +83,8 @@ func (m *model) tagCursorLeft() {
 
 		nextCellCursor := m.tagCellCursor - 1
 
-		m.flexBox.GetRow(m.fbTagRowCursor()).GetCell(m.fbTagCellCursor()).SetStyle(styleNormal)
-		m.flexBox.GetRow(m.fbTagRowCursor()).GetCell(m.fbTagCellCursorFromRef(nextCellCursor)).SetStyle(styleSelected)
+		// m.flexBox.GetRow(m.fbTagRowCursor()).GetCell(m.fbTagCellCursor()).SetStyle(styleNormal)
+		// m.flexBox.GetRow(m.fbTagRowCursor()).GetCell(m.fbTagCellCursorFromRef(nextCellCursor)).SetStyle(styleSelected)
 
 		m.tagCellCursor = nextCellCursor
 	}
@@ -234,14 +234,23 @@ func (m *model) deleteTagCell() {
 }
 
 // Set if choosing size of tagCellor binding data? Options arw "cell" and "binding"
-func (m *model) setCellInput(callerFunc caller) {
+func (m *model) setUserInput(callerFunc caller) {
 	m.updateType = textInput
 	m.inputCaller = callerFunc
 	ti := textinput.New()
-	ti.Placeholder = "Enter width per unit (0.20~0.80) and press Enter"
+
+	if m.inputCaller != setTagSize {
+		ti.Placeholder = "Enter width per unit (0.20~0.80) and press Enter"
+
+	} else if m.inputCaller == setTagSize {
+		ti.Placeholder = "Enter width in mm and press Enter"
+	} else if m.inputCaller == setFontSize {
+		ti.Placeholder = "Enter size in points and press Enter"
+
+	}
 	ti.Focus()
 	ti.CharLimit = 156
-	ti.Width = 20
+	ti.Width = 50
 	m.textInput = ti
 }
 
@@ -283,8 +292,6 @@ func (m *model) fbTagCellCursorFromRef(ref int) int {
 
 func (m *model) dataBindToCell() {
 
-	// length := len(m.csvData.boundHeaders)
-
 	if m.lastCSVHeaderIdx+1 == m.currentCSVHeaderIdx {
 
 		cell := m.tag.tagTable[m.tagRowCursor][m.tagCellCursor]
@@ -308,27 +315,6 @@ func (m *model) dataBindToCell() {
 		m.currentCSVHeaderIdx = 0
 		m.lastCSVHeaderIdx = -1
 	}
-
-	// if m.currentCSVHeaderIdx < length {
-
-	// 	cell := m.tag.tagTable[m.tagRowCursor][m.tagCellCursor]
-	// 	cell.refHeader = m.csvData.headers[m.currentCSVHeaderIdx]
-	// 	cell.isFieldName = true
-	// 	m.tag.tagTable[m.tagRowCursor][m.tagCellCursor] = cell
-	// 	m.csvData.boundHeaders[m.currentCSVHeaderIdx] = true
-	// 	m.currentCSVHeaderIdx++
-
-	// } else if m.currentCSVHeaderIdx >= length && m.currentCSVHeaderIdx < length*2 {
-	// 	idx := m.currentCSVHeaderIdx - length
-
-	// 	cell := m.tag.tagTable[m.tagRowCursor][m.tagCellCursor]
-	// 	cell.refHeader = m.csvData.headers[idx]
-	// 	cell.isFieldName = false
-	// 	m.tag.tagTable[m.tagRowCursor][m.tagCellCursor] = cell
-
-	// 	m.csvData.boundRows[idx] = true
-	// 	m.currentCSVHeaderIdx++
-	// }
 
 }
 
@@ -377,4 +363,71 @@ func (m model) changeCellWidth() {
 	}
 
 	m.tag.tagTable[m.tagRowCursor][m.tagCellCursor].widthPerUnit = inputValue
+}
+
+func (m *model) printCursorDown() {
+
+	if m.printRowCursor+1 < m.flexBox.RowsLen() { //5 rows, last one is idx 4
+
+		nextRowCursor := m.printRowCursor + 1
+
+		nextRowLen := m.flexBox.GetRow(nextRowCursor).CellsLen() - 2 // -2 to remove padding
+		if m.printCellCursor == m.flexBox.RowsLen()-1 && nextRowLen < m.flexBox.RowsLen() {
+			m.printCellCursor = 2
+		}
+		m.printRowCursor = nextRowCursor
+	}
+}
+
+//Special case cursor for print screen
+
+func (m *model) printCursorUp() {
+
+	if m.printRowCursor-1 > 0 { // 1 because of padding row
+
+		nextRowCursor := m.printRowCursor - 1
+
+		nextRowLen := m.flexBox.GetRow(nextRowCursor).CellsLen() - 2 // -2 to remove padding
+
+		//This case doesn't exist
+		if m.printCellCursor == m.flexBox.RowsLen()-1 && nextRowLen < m.flexBox.RowsLen() {
+			m.printCellCursor = 2
+		}
+		m.printRowCursor = nextRowCursor
+	}
+}
+
+// tagCursorRight move tagTable cursor right (through cells)
+func (m *model) printCursorRight() {
+
+	if m.printCellCursor+1 < m.flexBox.GetRow(m.printRowCursor).CellsLen()-1 {
+
+		nextCellCursor := m.printCellCursor + 1
+		m.printCellCursor = nextCellCursor
+	}
+}
+
+// tagCursorLeft move tagTable cursor left (through cells)
+func (m *model) printCursorLeft() {
+
+	if m.printCellCursor-1 > 0 {
+
+		nextCellCursor := m.printCellCursor - 1
+		m.printCellCursor = nextCellCursor
+	}
+}
+
+func (m *model) getPaperSize() {
+
+	m.paperSize = m.flexBox.GetRow(m.printRowCursor).GetCell(m.printCellCursor).GetContent()
+}
+
+func (m *model) getCellSizeValue() float64 {
+
+	inputValue, _ := strconv.ParseFloat(m.textInput.Value(), 64)
+
+	if inputValue > 0 {
+		return inputValue
+	}
+	return 0.0
 }

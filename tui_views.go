@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strconv"
+
 	"github.com/76creates/stickers/flexbox"
 )
 
@@ -122,38 +124,6 @@ func (m *model) tagBuilderView(footerText string) {
 		rows = append(rows, dataRow)
 	}
 
-	// // Add tag rows
-	// for _, row := range m.tag.tagTable {
-
-	// 	dataRow := m.flexBox.NewRow()
-
-	// 	if dataRow == nil {
-	// 		panic("could not find the table row")
-	// 	}
-	// 	// Add first padding tagCellbefore adding content cells
-	// 	dataRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
-
-	// 	// Ensures addition or deletion truncation from float to int ends up at length 1.0
-	// 	if len(row) == 1 {
-	// 		row[0].widthPerUnit = 1.0
-	// 	}
-
-	// 	// Add content cells
-	// 	for j, cell := range row {
-
-	// 		style := m.getCellTextStyle(cell, styleNormal)
-	// 		dataRow.AddCells(flexbox.NewCell(int(cell.widthPerUnit*100), 1).SetStyle(style))
-	// 		tagCell := dataRow.GetCell(j + 1).SetContent("")
-	// 		if tagCell == nil {
-	// 			panic("could not find the table cell")
-	// 		}
-	// 	}
-
-	// 	// Add closing padding cell
-	// 	dataRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
-	// 	rows = append(rows, dataRow)
-	// }
-
 	/* ---------------------------------------------------------------------------*/
 	/* ---------------------------------------------------------------------------*/
 
@@ -263,7 +233,7 @@ func (m *model) dataBinderView(footerText string) {
 
 	helpRow := m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("Arrows to move"))
 	rows = append(rows, helpRow)
-	helpRow = m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("Space: Bind table data to tag cell\t\t⌫: Skip current binding\t\tEsc: Return to Tag Builder"))
+	helpRow = m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("Space: Bind table data to tag cell\t\tBackspace: Skip current binding\t\tEsc: Return to Tag Builder"))
 	rows = append(rows, helpRow)
 	helpRow = m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("When you're done binding the data, press V to go to Tag Viewer and Printing."))
 	rows = append(rows, helpRow)
@@ -373,5 +343,109 @@ func (m *model) tagViewerView(footerText string) {
 		cell := m.tag.tagTable[m.tagRowCursor][m.tagCellCursor]
 		style := m.getCellTextStyle(cell, styleSelected)
 		rows[m.fbTagRowCursor()].GetCell(m.fbTagCellCursor()).SetStyle(style)
+	}
+}
+
+func (m *model) printToPDFView(userInput string) {
+
+	rows := []*flexbox.Row{}
+	m.flexBox.LockRowHeight(3)
+
+	pageSizeText := "Select page size:"
+	tagWidthText := "Enter tag width (mm):"
+	tagHeightText := "Enter tag height (mm):"
+
+	firstRow := m.flexBox.NewRow()
+	firstRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG)).
+		AddCells(flexbox.NewCell(100, 1).SetStyle(styleBindList).SetContent("Print to PDF")).
+		AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
+	rows = append(rows, firstRow)
+
+	pageSizeRow := m.flexBox.NewRow()
+	pageSizeRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
+	pageSizeRow.AddCells(flexbox.NewCell(34, 1).SetStyle(styleNormal).SetContent(pageSizeText))
+	if m.paperSize == "A4" {
+		pageSizeRow.AddCells(flexbox.NewCell(33, 1).SetStyle(stylePermaSelected).SetContent("A4"))
+	} else {
+
+		pageSizeRow.AddCells(flexbox.NewCell(33, 1).SetStyle(styleNormal).SetContent("A4"))
+	}
+	if m.paperSize == "Letter" {
+		pageSizeRow.AddCells(flexbox.NewCell(33, 1).SetStyle(stylePermaSelected).SetContent("Letter"))
+	} else {
+
+		pageSizeRow.AddCells(flexbox.NewCell(33, 1).SetStyle(styleNormal).SetContent("Letter"))
+	}
+	pageSizeRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
+
+	tagWidthRow := m.flexBox.NewRow()
+	tagWidthRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
+	tagWidthRow.AddCells(flexbox.NewCell(34, 1).SetStyle(styleNormal).SetContent(tagWidthText))
+	if m.tag.width > 0 {
+		tagWidthRow.AddCells(flexbox.NewCell(66, 1).SetStyle(stylePermaSelected).SetContent(strconv.FormatFloat(m.tag.width, 'f', -1, 64)))
+	} else {
+		// Add text input interface
+		if m.printRowCursor == 2 {
+			tagWidthRow.AddCells(flexbox.NewCell(66, 1).SetStyle(stylePrintTextInput).SetContent(userInput))
+		} else {
+			tagWidthRow.AddCells(flexbox.NewCell(66, 1).SetStyle(styleNormal).SetContent(""))
+		}
+	}
+	tagWidthRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
+
+	tagHeightRow := m.flexBox.NewRow()
+	tagHeightRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
+	tagHeightRow.AddCells(flexbox.NewCell(34, 1).SetStyle(styleNormal).SetContent(tagHeightText))
+	if m.tag.height > 0 {
+		tagHeightRow.AddCells(flexbox.NewCell(66, 1).SetStyle(stylePermaSelected).SetContent(strconv.FormatFloat(m.tag.height, 'f', -1, 64)))
+	} else {
+		// Add text input interface
+		if m.printRowCursor == 3 {
+			tagHeightRow.AddCells(flexbox.NewCell(66, 1).SetStyle(stylePrintTextInput).SetContent(userInput))
+		} else {
+			tagHeightRow.AddCells(flexbox.NewCell(66, 1).SetStyle(styleNormal).SetContent(""))
+		}
+	}
+	tagHeightRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
+
+	fontSizeRow := m.flexBox.NewRow()
+	fontSizeRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
+	fontSizeRow.AddCells(flexbox.NewCell(34, 1).SetStyle(styleNormal).SetContent(tagHeightText))
+	if m.tag.fontSize > 0 {
+		fontSizeRow.AddCells(flexbox.NewCell(66, 1).SetStyle(stylePermaSelected).SetContent(strconv.FormatFloat(m.tag.fontSize, 'f', -1, 64)))
+	} else {
+		// Add text input interface
+		if m.printRowCursor == 4 {
+			fontSizeRow.AddCells(flexbox.NewCell(66, 1).SetStyle(stylePrintTextInput).SetContent(userInput))
+		} else {
+			fontSizeRow.AddCells(flexbox.NewCell(66, 1).SetStyle(styleNormal).SetContent(""))
+		}
+	}
+	fontSizeRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
+
+	rows = append(rows, pageSizeRow, tagWidthRow, tagHeightRow, fontSizeRow)
+
+	// Add closing padding row
+	lastRow := m.flexBox.NewRow()
+	lastRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG)).
+		AddCells(flexbox.NewCell(100, 1).SetStyle(styleBG)).
+		AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
+
+	rows = append(rows, lastRow)
+
+	helpRow := m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("Arrows to move"))
+	rows = append(rows, helpRow)
+	helpRow = m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("Space: Activate user input\t\tEnter: Set selection or input\t\tP: Generate PDF"))
+	rows = append(rows, helpRow)
+	helpRow = m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("Esc: Return to Tag Viewer"))
+	rows = append(rows, helpRow)
+
+	m.flexBox.SetRows(rows)
+
+	// Highlight the current content row and tagCellas selected
+	if m.printRowCursor > 0 && m.printRowCursor < m.flexBox.RowsLen() &&
+		m.printCellCursor > 0 && m.printCellCursor < m.flexBox.GetRow(m.printRowCursor).CellsLen()-1 {
+
+		m.flexBox.GetRow(m.printRowCursor).GetCell(m.printCellCursor).SetStyle(styleSelected)
 	}
 }

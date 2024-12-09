@@ -15,7 +15,7 @@ const (
 	tagBuilderView
 	dataBinderView
 	tagViewerView
-	printView
+	printToPDFView
 )
 
 const (
@@ -23,6 +23,8 @@ const (
 	cellRightInsert
 	rowInsert
 	changeCellWidth
+	setTagSize
+	setFontSize
 )
 
 const (
@@ -44,6 +46,7 @@ type tagTable []tagRow // each element is a row with cells
 type tagRepr struct {
 	width    float64 // real width in mm
 	height   float64 // real height in mm
+	fontSize float64
 	tagTable tagTable
 }
 
@@ -62,10 +65,13 @@ type model struct {
 	inputCaller         caller
 	tagRowCursor        int
 	tagCellCursor       int
+	printRowCursor      int
+	printCellCursor     int
 	currentTag          int
 	currentCSVHeaderIdx int
 	lastCSVHeaderIdx    int
 	inputValue          string
+	paperSize           string
 	textInput           textinput.Model
 	// tag                []tagRepr
 	tag     tagRepr
@@ -91,11 +97,15 @@ func InitialModel() *model {
 	// Cursors start at -1 to avoid starting with a tagCellselected
 	dm.tagRowCursor = 0
 	dm.tagCellCursor = 0
+	dm.printRowCursor = 1
+	dm.printCellCursor = 1
 	dm.currentTag = 0
 	dm.currentView = welcome1View
 	dm.updateType = normal
 	dm.currentCSVHeaderIdx = 0
 	dm.lastCSVHeaderIdx = -1
+	dm.tag.width = 0
+	dm.tag.height = 0
 
 	dm.csvData.boundRows = make([]bool, len(dm.csvData.headers))
 	dm.csvData.boundHeaders = make([]bool, len(dm.csvData.headers))

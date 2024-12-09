@@ -36,6 +36,13 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case textInput:
 			return m.textInputKeys(msg)
 		}
+	case printToPDFView:
+		switch m.updateType {
+		case normal:
+			return m.printToPDFKeys(msg)
+		case textInput:
+			return m.textInputKeys(msg)
+		}
 	}
 	return m, nil
 }
@@ -76,7 +83,10 @@ func (m *model) View() string {
 			m.tagViewerView(m.textInput.View())
 		}
 		s += fmt.Sprint(m.flexBox.Render())
+	case printToPDFView:
 
+		m.printToPDFView(m.textInput.View())
+		s += fmt.Sprint(m.flexBox.Render())
 	}
 	return s
 }
