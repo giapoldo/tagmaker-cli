@@ -1,7 +1,8 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"os"
 
 	"github.com/go-pdf/fpdf"
 )
@@ -82,9 +83,14 @@ func (m *model) pdfGenerator() {
 		m.currentTag++
 	}
 
-	err := pdf.OutputFileAndClose("Output/Tags.pdf")
+	err := os.Mkdir("Output", 0777)
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("Mkdir error: %s", err)
+	}
+
+	err = pdf.OutputFileAndClose("Output/Tags.pdf")
+	if err != nil {
+		log.Printf("PDF output error: %s", err)
 	}
 }
 
