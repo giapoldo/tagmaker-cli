@@ -51,6 +51,8 @@ func (m *model) tagBuilderKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "b":
 			m.currentView = dataBinderView
+			m.tagRowCursor = 0
+			m.tagCellCursor = 0
 		case "up":
 			m.tagCursorUp()
 		case "down":
@@ -136,6 +138,8 @@ func (m *model) dataBindKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "v":
 			m.currentView = tagViewerView
+			m.tagRowCursor = 0
+			m.tagCellCursor = 0
 		case " ":
 			m.dataBindToCell()
 		case "up":
@@ -152,6 +156,8 @@ func (m *model) dataBindKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.currentView = tagBuilderView
 			m.updateType = normal
 			m.currentCSVHeaderIdx = 0
+			m.tagRowCursor = 0
+			m.tagCellCursor = 0
 
 		}
 	}
@@ -176,6 +182,8 @@ func (m *model) tagViewerKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "p":
 			m.currentView = printToPDFView
+			m.printRowCursor = 1
+			m.printCellCursor = 1
 		case "b":
 			m.toggleBold()
 		case "i":
@@ -198,9 +206,11 @@ func (m *model) tagViewerKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "right":
 			m.tagCursorRight()
 		case "esc":
-			m.currentView = tagBuilderView
+			m.currentView = dataBinderView
 			m.updateType = normal
 			m.currentCSVHeaderIdx = 0
+			m.tagRowCursor = 0
+			m.tagCellCursor = 0
 
 		}
 	}
@@ -250,6 +260,8 @@ func (m *model) printToPDFKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.currentView = tagViewerView
 			m.updateType = normal
 			m.currentCSVHeaderIdx = 0
+			m.tagRowCursor = 0
+			m.tagCellCursor = 0
 
 		}
 	}

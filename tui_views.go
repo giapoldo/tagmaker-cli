@@ -4,36 +4,34 @@ import (
 	"strconv"
 
 	"github.com/76creates/stickers/flexbox"
+	"github.com/charmbracelet/lipgloss"
 )
+
+func (m *model) appendPaddedRow(rows []*flexbox.Row, content string, contentStyle lipgloss.Style) []*flexbox.Row {
+
+	row := m.flexBox.NewRow()
+	row.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG)).
+		AddCells(flexbox.NewCell(100, 1).SetStyle(contentStyle).SetContent(content)).
+		AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
+	rows = append(rows, row)
+
+	return rows
+}
 
 func (m *model) welcome1View() {
 
 	rows := []*flexbox.Row{}
 	m.flexBox.LockRowHeight(12)
 
-	firstRow := m.flexBox.NewRow()
-	firstRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(100, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
-	rows = append(rows, firstRow)
-
-	textRow := m.flexBox.NewRow()
-	textRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
+	// Add top padding row
+	rows = m.appendPaddedRow(rows, "", styleBG)
 
 	welcomeText := "Welcome to TagBuilder.\n\nThis tool helps you build a tag format for classification of elements in collections, samples or fieldwork findings around your tabulated data.\n\nInitially for museological work, but use it for whatever yo want.\n\nCheck the provided CSV table in the \"Input\" folder for the format.\n\nPress Ctrl+C or Q to quit or any other key to continue"
 
-	textRow.AddCells(flexbox.NewCell(100, 1).SetStyle(styleWelcome).SetContent(welcomeText))
-	textRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
+	rows = m.appendPaddedRow(rows, welcomeText, styleWelcome)
 
-	rows = append(rows, textRow)
-
-	// Add closing padding row
-	lastRow := m.flexBox.NewRow()
-	lastRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(100, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
-
-	rows = append(rows, lastRow)
+	// Add bottom padding row
+	rows = m.appendPaddedRow(rows, "", styleBG)
 
 	m.flexBox.SetRows(rows)
 }
@@ -43,29 +41,15 @@ func (m *model) welcome2View() {
 	rows := []*flexbox.Row{}
 	m.flexBox.LockRowHeight(12)
 
-	firstRow := m.flexBox.NewRow()
-	firstRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(100, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
-	rows = append(rows, firstRow)
-
-	textRow := m.flexBox.NewRow()
-	textRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
+	// Top padding
+	rows = m.appendPaddedRow(rows, "", styleBG)
 
 	welcomeText := "Press A to add your first row.\nthen use the help below to construct the rest of the tag."
 
-	textRow.AddCells(flexbox.NewCell(100, 1).SetStyle(styleWelcome).SetContent(welcomeText))
-	textRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
+	rows = m.appendPaddedRow(rows, welcomeText, styleWelcome)
 
-	rows = append(rows, textRow)
-
-	// Add closing padding row
-	lastRow := m.flexBox.NewRow()
-	lastRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(100, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
-
-	rows = append(rows, lastRow)
+	// Bottom padding
+	rows = m.appendPaddedRow(rows, "", styleBG)
 
 	m.flexBox.SetRows(rows)
 }
@@ -75,12 +59,7 @@ func (m *model) tagBuilderView(footerText string) {
 	rows := []*flexbox.Row{}
 	m.flexBox.LockRowHeight(3)
 
-	firstRow := m.flexBox.NewRow()
-	firstRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(100, 1).SetStyle(styleBindList).SetContent("Tag Builder")).
-		AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
-
-	rows = append(rows, firstRow)
+	rows = m.appendPaddedRow(rows, "Tag Builder", styleBindList)
 
 	/* ---------------------------------------------------------------------------*/
 	/* ---------------------------------------------------------------------------*/
@@ -128,18 +107,15 @@ func (m *model) tagBuilderView(footerText string) {
 	/* ---------------------------------------------------------------------------*/
 
 	// Add closing padding row
-	lastRow := m.flexBox.NewRow()
-	lastRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(100, 1).SetStyle(styleBG).SetContent(footerText)).
-		AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
+	rows = m.appendPaddedRow(rows, footerText, styleBG)
 
-	// Add text input interface
+	// Add text input interface to last row
 	if m.updateType == textInput {
-		lastRow.GetCell(1).SetStyle(styleTextInput)
+		rows[len(rows)-1].GetCell(1).SetStyle(styleTextInput)
 	}
 
-	//Append whatever was added, data binding or textInput/nothing
-	rows = append(rows, lastRow)
+	// //Append whatever was added, data binding or textInput/nothing
+	// rows = append(rows, lastRow)
 
 	helpRow := m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("Arrows to move"))
 	rows = append(rows, helpRow)
@@ -152,7 +128,6 @@ func (m *model) tagBuilderView(footerText string) {
 
 	// SetRows instead of AddRows, since setrows overwrites, and when
 	// calling tagBuilderView, we always want to overwrite to refresh the view.
-
 	m.flexBox.SetRows(rows)
 
 	// Highlight the current content row and tagCellas selected
@@ -170,13 +145,7 @@ func (m *model) dataBinderView(footerText string) {
 	rows := []*flexbox.Row{}
 	m.flexBox.LockRowHeight(3)
 
-	firstRow := m.flexBox.NewRow()
-	firstRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(100, 1).SetStyle(styleBindList).SetContent("Table Data Binder")).
-		AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
-
-	rows = append(rows, firstRow)
-
+	rows = m.appendPaddedRow(rows, "Table Data Binder", styleBindList)
 	/* ---------------------------------------------------------------------------*/
 	/* ---------------------------------------------------------------------------*/
 
@@ -222,20 +191,13 @@ func (m *model) dataBinderView(footerText string) {
 	/* ---------------------------------------------------------------------------*/
 	/* ---------------------------------------------------------------------------*/
 
-	// Add closing padding row
-	lastRow := m.flexBox.NewRow()
-	lastRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(100, 1).SetStyle(styleBindList).SetContent(footerText)).
-		AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
-
-	//Append whatever was added, data binding or textInput/nothing
-	rows = append(rows, lastRow)
+	rows = m.appendPaddedRow(rows, footerText, styleBindList)
 
 	helpRow := m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("Arrows to move"))
 	rows = append(rows, helpRow)
-	helpRow = m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("Space: Bind table data to tag cell\t\tBackspace: Skip current binding\t\tEsc: Return to Tag Builder"))
+	helpRow = m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("Space: Bind table data to tag cell\t\tBackspace: Skip current binding\t\tEsc: Return to the Tag Builder"))
 	rows = append(rows, helpRow)
-	helpRow = m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("When you're done binding the data, press V to go to Tag Viewer and Printing."))
+	helpRow = m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("When you're done binding the data, press V to go to the Tag Viewer."))
 	rows = append(rows, helpRow)
 
 	// SetRows instead of AddRows, since setrows overwrites, and when
@@ -258,12 +220,7 @@ func (m *model) tagViewerView(footerText string) {
 	rows := []*flexbox.Row{}
 	m.flexBox.LockRowHeight(3)
 
-	firstRow := m.flexBox.NewRow()
-	firstRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(100, 1).SetStyle(styleBindList).SetContent("Tag Viewer")).
-		AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
-
-	rows = append(rows, firstRow)
+	rows = m.appendPaddedRow(rows, "Tag Viewer", styleBindList)
 
 	/* ---------------------------------------------------------------------------*/
 	/* ---------------------------------------------------------------------------*/
@@ -308,19 +265,13 @@ func (m *model) tagViewerView(footerText string) {
 	/* ---------------------------------------------------------------------------*/
 	/* ---------------------------------------------------------------------------*/
 
-	// Add closing padding row
-	lastRow := m.flexBox.NewRow()
-	lastRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(100, 1).SetStyle(styleBindList).SetContent(footerText)).
-		AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
-
-	// Add text input interface
+	// Add bottom row and text input interface if needed
 	if m.updateType == textInput {
-		lastRow.GetCell(1).SetStyle(styleTextInput)
-	}
+		rows = m.appendPaddedRow(rows, footerText, styleTextInput)
+	} else {
+		rows = m.appendPaddedRow(rows, footerText, styleBindList)
 
-	//Append whatever was added, data binding or textInput/nothing
-	rows = append(rows, lastRow)
+	}
 
 	helpRow := m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("Arrows to move"))
 	rows = append(rows, helpRow)
@@ -354,12 +305,9 @@ func (m *model) printToPDFView(userInput string) {
 	pageSizeText := "Select page size:"
 	tagWidthText := "Enter tag width (mm):"
 	tagHeightText := "Enter tag height (mm):"
+	fontSizeText := "Enter font size (pt):"
 
-	firstRow := m.flexBox.NewRow()
-	firstRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(100, 1).SetStyle(styleBindList).SetContent("Print to PDF")).
-		AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
-	rows = append(rows, firstRow)
+	rows = m.appendPaddedRow(rows, "Print to PDF", styleBindList)
 
 	pageSizeRow := m.flexBox.NewRow()
 	pageSizeRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
@@ -367,7 +315,6 @@ func (m *model) printToPDFView(userInput string) {
 	if m.paperSize == "A4" {
 		pageSizeRow.AddCells(flexbox.NewCell(33, 1).SetStyle(stylePermaSelected).SetContent("A4"))
 	} else {
-
 		pageSizeRow.AddCells(flexbox.NewCell(33, 1).SetStyle(styleNormal).SetContent("A4"))
 	}
 	if m.paperSize == "Letter" {
@@ -410,7 +357,7 @@ func (m *model) printToPDFView(userInput string) {
 
 	fontSizeRow := m.flexBox.NewRow()
 	fontSizeRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
-	fontSizeRow.AddCells(flexbox.NewCell(34, 1).SetStyle(styleNormal).SetContent(tagHeightText))
+	fontSizeRow.AddCells(flexbox.NewCell(34, 1).SetStyle(styleNormal).SetContent(fontSizeText))
 	if m.tag.fontSize > 0 {
 		fontSizeRow.AddCells(flexbox.NewCell(66, 1).SetStyle(stylePermaSelected).SetContent(strconv.FormatFloat(m.tag.fontSize, 'f', -1, 64)))
 	} else {
@@ -426,12 +373,7 @@ func (m *model) printToPDFView(userInput string) {
 	rows = append(rows, pageSizeRow, tagWidthRow, tagHeightRow, fontSizeRow)
 
 	// Add closing padding row
-	lastRow := m.flexBox.NewRow()
-	lastRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(100, 1).SetStyle(styleBG)).
-		AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
-
-	rows = append(rows, lastRow)
+	rows = m.appendPaddedRow(rows, "", styleBG)
 
 	helpRow := m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("Arrows to move"))
 	rows = append(rows, helpRow)
