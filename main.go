@@ -84,8 +84,12 @@ func (m *model) View() string {
 		}
 		s += fmt.Sprint(m.flexBox.Render())
 	case printToPDFView:
-
-		m.printToPDFView(m.textInput.View())
+		switch m.updateType {
+		case normal:
+			m.printToPDFView("")
+		case textInput:
+			m.printToPDFView(m.textInput.View())
+		}
 		s += fmt.Sprint(m.flexBox.Render())
 	}
 	return s

@@ -240,12 +240,12 @@ func (m *model) setUserInput(callerFunc caller) {
 	ti := textinput.New()
 
 	if m.inputCaller != setTagSize {
-		ti.Placeholder = "Enter width per unit (0.20~0.80) and press Enter"
+		ti.Placeholder = "Enter width per unit (0.20~0.80)"
 
 	} else if m.inputCaller == setTagSize {
-		ti.Placeholder = "Enter width in mm and press Enter"
+		ti.Placeholder = "Enter width in mm"
 	} else if m.inputCaller == setFontSize {
-		ti.Placeholder = "Enter size in points and press Enter"
+		ti.Placeholder = "Enter size in points"
 
 	}
 	ti.Focus()
@@ -275,19 +275,9 @@ func (m *model) fbTagRowCursor() int {
 	return m.tagRowCursor + 1
 }
 
-func (m *model) fbTagRowCursorFromRef(ref int) int {
-
-	return ref + 1
-}
-
 func (m *model) fbTagCellCursor() int {
 
 	return m.tagCellCursor + 1
-}
-
-func (m *model) fbTagCellCursorFromRef(ref int) int {
-
-	return ref + 1
 }
 
 func (m *model) dataBindToCell() {

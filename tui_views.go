@@ -26,7 +26,7 @@ func (m *model) welcome1View() {
 	// Add top padding row
 	rows = m.appendPaddedRow(rows, "", styleBG)
 
-	welcomeText := "Welcome to TagBuilder.\n\nThis tool helps you build a tag format for classification of elements in collections, samples or fieldwork findings around your tabulated data.\n\nInitially for museological work, but use it for whatever yo want.\n\nCheck the provided CSV table in the \"Input\" folder for the format.\n\nPress Ctrl+C or Q to quit or any other key to continue"
+	welcomeText := "Welcome to TagBuilder.\n\nThis tool helps you build a tag format for classification of elements in collections, samples or fieldwork findings around your tabulated data.\n\nInitially for archaeological work, but use it for whatever yo want.\n\nCheck the provided CSV table in the \"Input\" folder for the format.\n\nPress Ctrl+C or Q to quit at any time or any other key to continue"
 
 	rows = m.appendPaddedRow(rows, welcomeText, styleWelcome)
 
@@ -61,9 +61,6 @@ func (m *model) tagBuilderView(footerText string) {
 
 	rows = m.appendPaddedRow(rows, "Tag Builder", styleBindList)
 
-	/* ---------------------------------------------------------------------------*/
-	/* ---------------------------------------------------------------------------*/
-
 	// Add tag rows
 	for _, row := range m.tag.tagTable {
 
@@ -92,7 +89,6 @@ func (m *model) tagBuilderView(footerText string) {
 					dataRow.AddCells(flexbox.NewCell(int(cell.widthPerUnit*100), 1).SetStyle(style).
 						SetContent(m.csvData.rows[m.currentTag][cell.refHeader]))
 				}
-
 			} else {
 				dataRow.AddCells(flexbox.NewCell(int(cell.widthPerUnit*100), 1).SetStyle(style))
 			}
@@ -103,15 +99,12 @@ func (m *model) tagBuilderView(footerText string) {
 		rows = append(rows, dataRow)
 	}
 
-	/* ---------------------------------------------------------------------------*/
-	/* ---------------------------------------------------------------------------*/
-
-	// Add closing padding row
-	rows = m.appendPaddedRow(rows, footerText, styleBG)
-
 	// Add text input interface to last row
 	if m.updateType == textInput {
-		rows[len(rows)-1].GetCell(1).SetStyle(styleTextInput)
+		rows = m.appendPaddedRow(rows, footerText, stylePrintTextInput)
+
+	} else {
+		rows = m.appendPaddedRow(rows, footerText, styleBG)
 	}
 
 	// //Append whatever was added, data binding or textInput/nothing
@@ -328,6 +321,7 @@ func (m *model) printToPDFView(userInput string) {
 	tagWidthRow := m.flexBox.NewRow()
 	tagWidthRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
 	tagWidthRow.AddCells(flexbox.NewCell(34, 1).SetStyle(styleNormal).SetContent(tagWidthText))
+
 	if m.tag.width > 0 {
 		tagWidthRow.AddCells(flexbox.NewCell(66, 1).SetStyle(stylePermaSelected).SetContent(strconv.FormatFloat(m.tag.width, 'f', -1, 64)))
 	} else {
@@ -343,6 +337,7 @@ func (m *model) printToPDFView(userInput string) {
 	tagHeightRow := m.flexBox.NewRow()
 	tagHeightRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
 	tagHeightRow.AddCells(flexbox.NewCell(34, 1).SetStyle(styleNormal).SetContent(tagHeightText))
+
 	if m.tag.height > 0 {
 		tagHeightRow.AddCells(flexbox.NewCell(66, 1).SetStyle(stylePermaSelected).SetContent(strconv.FormatFloat(m.tag.height, 'f', -1, 64)))
 	} else {
@@ -358,6 +353,7 @@ func (m *model) printToPDFView(userInput string) {
 	fontSizeRow := m.flexBox.NewRow()
 	fontSizeRow.AddCells(flexbox.NewCell(10, 1).SetStyle(styleBG))
 	fontSizeRow.AddCells(flexbox.NewCell(34, 1).SetStyle(styleNormal).SetContent(fontSizeText))
+
 	if m.tag.fontSize > 0 {
 		fontSizeRow.AddCells(flexbox.NewCell(66, 1).SetStyle(stylePermaSelected).SetContent(strconv.FormatFloat(m.tag.fontSize, 'f', -1, 64)))
 	} else {

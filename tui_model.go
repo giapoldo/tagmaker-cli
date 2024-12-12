@@ -63,6 +63,7 @@ type model struct {
 	currentView         currentView
 	updateType          tagBuilderActions
 	inputCaller         caller
+	activeInput         bool
 	tagRowCursor        int
 	tagCellCursor       int
 	printRowCursor      int
@@ -84,11 +85,6 @@ func InitialModel() *model {
 	dm := model{}
 	dm.readCSVFile()
 	dm.flexBox = flexbox.New(0, 0)
-	// dm.tag = make([]tagRepr, len(dm.csvData.rows)) // .data holds the exact amount of tag
-
-	// dm.tag = append(dm.tag, tagRepr{
-	// 	tagTable: tagTable{},
-	// })
 
 	dm.tag = tagRepr{
 		tagTable: tagTable{},

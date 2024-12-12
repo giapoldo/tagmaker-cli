@@ -6,13 +6,6 @@ import (
 	"github.com/go-pdf/fpdf"
 )
 
-type pageSize struct {
-	width  int
-	height int
-}
-
-var pageSizes map[string]pageSize
-
 func pdfSetup(pageSize string) *fpdf.Fpdf {
 	project_dir := "."
 	fontPath := filepath.Join(project_dir, "font")
