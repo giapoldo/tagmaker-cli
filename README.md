@@ -30,3 +30,9 @@ Use [webi](https://webinstall.dev/go/) for an easy installation
 ### Use the program
 
 Follow the on screen instructions
+
+## Contributing
+
+### Submit a pull request
+
+If you'd like to contribute, clone the project (see **Usage**) and Submit a pull request to the `main` branch.
