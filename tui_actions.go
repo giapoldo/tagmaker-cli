@@ -377,6 +377,7 @@ func (m *model) getPaperSize() string {
 func (m *model) resetViewState() {
 	m.activeInput = false
 	m.currentCSVHeaderIdx = 0
+	m.prevCSVHeaderIdx = -1
 	m.tagRowCursor = 0
 	m.tagCellCursor = 0
 	m.inputValues = inputValues{}
