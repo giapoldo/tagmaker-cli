@@ -46,28 +46,43 @@ func (m *model) textInputKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		// Cool, what was the actual key pressed?
+
 		switch msg.String() {
 		// These keys should exit the program.
 		case "enter":
-			m.inputValue = m.textInput.Value()
+			// m.inputValue = m.getCellSizeValue()
+			m.saveInputValue()
+			m.inputCaller()
 			m.unsetUserInput()
-			switch m.inputCaller {
-			case cellLeftInsert:
-				m.insertTagCellLeft()
-			case cellRightInsert:
-				m.insertTagCellRight()
-			case changeCellWidth:
-				m.changeCellWidth()
-			case setTagSize, setFontSize:
-				switch m.printRowCursor {
-				case 2:
-					m.tag.width = m.getCellSizeValue()
-				case 3:
-					m.tag.height = m.getCellSizeValue()
-				case 4:
-					m.tag.fontSize = m.getCellSizeValue()
-				}
+
+		case "up":
+			if m.currentView == printToPDFView {
+				m.printCursorUp()
+			} else {
+				m.tagCursorUp()
 			}
+			m.unsetUserInput()
+		case "down":
+			if m.currentView == printToPDFView {
+				m.printCursorDown()
+			} else {
+				m.tagCursorDown()
+			}
+			m.unsetUserInput()
+		case "left":
+			if m.currentView == printToPDFView {
+				m.printCursorLeft()
+			} else {
+				m.tagCursorLeft()
+			}
+			m.unsetUserInput()
+		case "right":
+			if m.currentView == printToPDFView {
+				m.printCursorRight()
+			} else {
+				m.tagCursorRight()
+			}
+			m.unsetUserInput()
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		}
@@ -76,51 +91,7 @@ func (m *model) textInputKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m *model) tagBuilderKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		windowHeight := msg.Height
-		windowWidth := msg.Width
-		m.flexBox.SetWidth(windowWidth)
-		m.flexBox.SetHeight(windowHeight)
-
-	case tea.KeyMsg:
-
-		// Cool, what was the actual key pressed?
-		switch msg.String() {
-		// These keys should exit the program.
-		case "ctrl+c", "q":
-			return m, tea.Quit
-		case "b":
-			m.currentView = dataBinderView
-			m.tagRowCursor = 0
-			m.tagCellCursor = 0
-		case "up":
-			m.tagCursorUp()
-		case "down":
-			m.tagCursorDown()
-		case "left":
-			m.tagCursorLeft()
-		case "right":
-			m.tagCursorRight()
-		case "a":
-			m.insertTagRow()
-		case "z":
-			m.deleteTagRow()
-		case "x":
-			m.deleteTagCell()
-		case "s":
-			m.setUserInput(cellLeftInsert)
-		case "d":
-			m.setUserInput(cellRightInsert)
-		}
-
-	}
-
-	return m, nil
-}
-
-func (m *model) dataBindKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *model) tagKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
@@ -131,17 +102,16 @@ func (m *model) dataBindKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.flexBox.SetHeight(windowHeight)
 
 	case tea.KeyMsg:
+
 		// Cool, what was the actual key pressed?
 		switch msg.String() {
 		// These keys should exit the program.
 		case "ctrl+c", "q":
 			return m, tea.Quit
-		case "v":
-			m.currentView = tagViewerView
-			m.tagRowCursor = 0
-			m.tagCellCursor = 0
-		case " ":
-			m.dataBindToCell()
+			// case "enter":
+			// 	m.inputValue = m.textInput.Value()
+			// 	m.inputCaller()
+			// 	m.unsetUserInput()
 		case "up":
 			m.tagCursorUp()
 		case "down":
@@ -150,68 +120,84 @@ func (m *model) dataBindKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.tagCursorLeft()
 		case "right":
 			m.tagCursorRight()
-		case "backspace":
-			m.skipBindToCell()
-		case "esc":
-			m.currentView = tagBuilderView
-			m.updateType = normal
-			m.currentCSVHeaderIdx = 0
-			m.tagRowCursor = 0
-			m.tagCellCursor = 0
-
+			// case "n":
+			// 	switch m.currentView {
+			// 	case tagBuilderView:
+			// 		m.currentView = dataBinderView
+			// 	case dataBinderView:
+			// 		m.currentView = tagViewerView
+			// 	case tagViewerView:
+			// 		m.currentView = printToPDFView
+			// 	}
+			// 	m.resetViewState()
+			// case "esc":
+			// 	switch m.currentView {
+			// 	case tagBuilderView:
+			// 	case dataBinderView:
+			// 		m.currentView = tagBuilderView
+			// 	case tagViewerView:
+			// 		m.currentView = dataBinderView
+			// 	}
+			// 	m.resetViewState()
 		}
-	}
-	return m, cmd
-}
 
-func (m *model) tagViewerKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
-
-	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		windowHeight := msg.Height
-		windowWidth := msg.Width
-		m.flexBox.SetWidth(windowWidth)
-		m.flexBox.SetHeight(windowHeight)
-
-	case tea.KeyMsg:
-		// Cool, what was the actual key pressed?
-		switch msg.String() {
-		// These keys should exit the program.
-		case "ctrl+c", "q":
-			return m, tea.Quit
-		case "p":
-			m.currentView = printToPDFView
-			m.printRowCursor = 1
-			m.printCellCursor = 1
-		case "b":
-			m.toggleBold()
-		case "i":
-			m.toggleItalic()
-		case "c":
-			m.toggleCentered()
-		case "w":
-			// change cell width UNSAFE, you will need to set all cells in the row and make sure they add to 1.0
-			m.setUserInput(changeCellWidth)
-		case "k":
-			m.previousTag()
-		case "l":
-			m.nextTag()
-		case "up":
-			m.tagCursorUp()
-		case "down":
-			m.tagCursorDown()
-		case "left":
-			m.tagCursorLeft()
-		case "right":
-			m.tagCursorRight()
-		case "esc":
-			m.currentView = dataBinderView
-			m.updateType = normal
-			m.currentCSVHeaderIdx = 0
-			m.tagRowCursor = 0
-			m.tagCellCursor = 0
-
+		switch m.currentView {
+		case tagBuilderView:
+			switch msg.String() {
+			case "a":
+				m.insertTagRow()
+			case "z":
+				m.deleteTagRow()
+			case "x":
+				m.deleteTagCell()
+			case "s":
+				m.setUserInput(m.insertTagCellLeft)
+				m.textInput.Placeholder = "Enter width in per unit (0.20~0.80)"
+			case "d":
+				m.setUserInput(m.insertTagCellRight)
+				m.textInput.Placeholder = "Enter width in per unit (0.20~0.80)"
+			case "n":
+				m.currentView = dataBinderView
+				m.resetViewState()
+			case "esc":
+				m.resetViewState()
+			}
+		case dataBinderView:
+			switch msg.String() {
+			case " ":
+				m.dataBindToCell()
+			case "backspace":
+				m.skipBindToCell()
+			case "n":
+				m.currentView = tagViewerView
+				m.resetViewState()
+			case "esc":
+				m.currentView = tagBuilderView
+				m.resetViewState()
+			}
+		case tagViewerView:
+			switch msg.String() {
+			case "b":
+				m.toggleBold()
+			case "i":
+				m.toggleItalic()
+			case "c":
+				m.toggleCentered()
+			case "w":
+				// change cell width UNSAFE, you will need to set all cells in the row and make sure they add to 1.0
+				m.setUserInput(m.changeCellWidth)
+				m.textInput.Placeholder = "Enter width in per unit (0.20~0.80)"
+			case "k":
+				m.previousTag()
+			case "l":
+				m.nextTag()
+			case "n":
+				m.currentView = printToPDFView
+				m.resetViewState()
+			case "esc":
+				m.currentView = dataBinderView
+				m.resetViewState()
+			}
 		}
 	}
 	return m, cmd
@@ -234,20 +220,36 @@ func (m *model) printToPDFKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "enter":
-			if m.printCellCursor >= 2 {
-				if m.printRowCursor == 1 {
-					m.getPaperSize()
-				}
+			switch printViewRows[m.printRowCursor] {
+			case printViewRows[1]: // paper size
+				m.pVContents.selectedValues[printKeysStatic[1]] = m.getPaperSize()
+
+			case printViewRows[2]: // width
+				m.setUserInput(m.saveToCurrentPVSelected)
+				m.textInput.Placeholder = "Enter width"
+
+			case printViewRows[3]: // height
+				m.setUserInput(m.saveToCurrentPVSelected)
+				m.textInput.Placeholder = "Enter height"
+
+			case printViewRows[4]: // font size
+				m.setUserInput(m.saveToCurrentPVSelected)
+				m.textInput.Placeholder = "Enter font size"
+
 			}
-		case " ":
-			if m.printCellCursor >= 2 {
-				switch m.printRowCursor {
-				case 2, 3:
-					m.setUserInput(setTagSize)
-				case 4:
-					m.setUserInput(setFontSize)
-				}
-			}
+
+			// if m.activeInput {
+			// 	m.pVContents.selectedValues[printViewRows[m.printRowCursor]] =
+			// }
+			// switch m.printRowCursor {
+			// case 1:
+			// }
+			// if m.printRowCursor == 1 {
+			// } else {
+
+			// 	m.pVContents.selectedValues[]
+			// }
+
 		case "p":
 			m.pdfGenerator()
 		case "up":
@@ -260,10 +262,7 @@ func (m *model) printToPDFKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.printCursorRight()
 		case "esc":
 			m.currentView = tagViewerView
-			m.updateType = normal
-			m.currentCSVHeaderIdx = 0
-			m.tagRowCursor = 0
-			m.tagCellCursor = 0
+			m.resetViewState()
 
 		}
 	}

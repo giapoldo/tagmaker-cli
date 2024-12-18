@@ -141,13 +141,12 @@ func (m *model) deleteTagRow() {
 
 }
 
-// Add a cell, selected cell will shrink by new cell's size
-// ratio to accomodate the new cell
+// Add a cell
 func (m *model) insertTagCellLeft() {
 
 	// m.setCursor() // sanity
 
-	widthPU := m.getCellWidthValue()
+	widthPU := m.inputValues.floatVal
 	// widthPU, _ := strconv.ParseFloat(m.getCellWidthValue(), 64)
 
 	if widthPU != 0.0 {
@@ -175,7 +174,7 @@ func (m *model) insertTagCellLeft() {
 
 func (m *model) insertTagCellRight() {
 
-	widthPU := m.getCellWidthValue()
+	widthPU := m.inputValues.floatVal
 
 	if widthPU != 0.0 {
 
@@ -233,39 +232,20 @@ func (m *model) deleteTagCell() {
 
 }
 
-// Set if choosing size of tagCellor binding data? Options arw "cell" and "binding"
-func (m *model) setUserInput(callerFunc caller) {
-	m.updateType = textInput
-	m.inputCaller = callerFunc
+// Creates textinput instance
+func (m *model) setUserInput(caller func()) {
+	m.activeInput = true
+	m.inputCaller = caller
 	ti := textinput.New()
-
-	if m.inputCaller != setTagSize {
-		ti.Placeholder = "Enter width per unit (0.20~0.80)"
-
-	} else if m.inputCaller == setTagSize {
-		ti.Placeholder = "Enter width in mm"
-	} else if m.inputCaller == setFontSize {
-		ti.Placeholder = "Enter size in points"
-
-	}
 	ti.Focus()
-	ti.CharLimit = 156
+	ti.CharLimit = 50
 	ti.Width = 50
 	m.textInput = ti
 }
 
 func (m *model) unsetUserInput() {
-	m.updateType = normal
-}
-
-func (m *model) getCellWidthValue() float64 {
-
-	inputValue, _ := strconv.ParseFloat(m.textInput.Value(), 64)
-
-	if inputValue > 0.1 && inputValue <= 0.8 {
-		return inputValue
-	}
-	return 0.0
+	m.activeInput = false
+	m.inputCaller = nil
 }
 
 // Flexbox cursor is always calculated from the tagTable, it cannot go out of
@@ -282,16 +262,16 @@ func (m *model) fbTagCellCursor() int {
 
 func (m *model) dataBindToCell() {
 
-	if m.lastCSVHeaderIdx+1 == m.currentCSVHeaderIdx {
+	if m.prevCSVHeaderIdx+1 == m.currentCSVHeaderIdx {
 
 		cell := m.tag.tagTable[m.tagRowCursor][m.tagCellCursor]
 		cell.refHeader = m.csvData.headers[m.currentCSVHeaderIdx]
 		cell.isFieldName = true
 		m.tag.tagTable[m.tagRowCursor][m.tagCellCursor] = cell
 		m.csvData.boundHeaders[m.currentCSVHeaderIdx] = true
-		m.lastCSVHeaderIdx++
+		m.prevCSVHeaderIdx++
 
-	} else if m.lastCSVHeaderIdx == m.currentCSVHeaderIdx {
+	} else if m.prevCSVHeaderIdx == m.currentCSVHeaderIdx {
 		cell := m.tag.tagTable[m.tagRowCursor][m.tagCellCursor]
 		cell.refHeader = m.csvData.headers[m.currentCSVHeaderIdx]
 		cell.isFieldName = false
@@ -303,7 +283,7 @@ func (m *model) dataBindToCell() {
 
 	if m.currentCSVHeaderIdx == len(m.csvData.boundHeaders) {
 		m.currentCSVHeaderIdx = 0
-		m.lastCSVHeaderIdx = -1
+		m.prevCSVHeaderIdx = -1
 	}
 
 }
@@ -344,28 +324,14 @@ func (m *model) previousTag() {
 	}
 }
 
-func (m model) changeCellWidth() {
-
-	inputValue, _ := strconv.ParseFloat(m.textInput.Value(), 64)
-
-	if inputValue <= 0.1 && inputValue > 0.8 {
-		inputValue = 0.0
-	}
-
-	m.tag.tagTable[m.tagRowCursor][m.tagCellCursor].widthPerUnit = inputValue
-}
-
 func (m *model) printCursorDown() {
 
-	if m.printRowCursor+1 < m.flexBox.RowsLen() { //5 rows, last one is idx 4
+	if m.printRowCursor+1 <= len(printKeysStatic)+len(printKeysInputs) {
 
 		nextRowCursor := m.printRowCursor + 1
 
-		nextRowLen := m.flexBox.GetRow(nextRowCursor).CellsLen() - 2 // -2 to remove padding
-		if m.printCellCursor == m.flexBox.RowsLen()-1 && nextRowLen < m.flexBox.RowsLen() {
-			m.printCellCursor = 2
-		}
 		m.printRowCursor = nextRowCursor
+		m.printCellCursor = 2 // always return to first cell
 	}
 }
 
@@ -373,21 +339,17 @@ func (m *model) printCursorDown() {
 
 func (m *model) printCursorUp() {
 
-	if m.printRowCursor-1 > 0 { // 1 because of padding row
+	if m.printRowCursor-1 > 0 { // Off from 0 because of padding row
 
 		nextRowCursor := m.printRowCursor - 1
 
-		nextRowLen := m.flexBox.GetRow(nextRowCursor).CellsLen() - 2 // -2 to remove padding
-
-		//This case doesn't exist
-		if m.printCellCursor == m.flexBox.RowsLen()-1 && nextRowLen < m.flexBox.RowsLen() {
-			m.printCellCursor = 2
-		}
 		m.printRowCursor = nextRowCursor
+		m.printCellCursor = 2 // always return to first cell
+
 	}
 }
 
-// tagCursorRight move tagTable cursor right (through cells)
+// printCursorRight moves cursor right (through cells), visually
 func (m *model) printCursorRight() {
 
 	if m.printCellCursor+1 < m.flexBox.GetRow(m.printRowCursor).CellsLen()-1 {
@@ -397,27 +359,60 @@ func (m *model) printCursorRight() {
 	}
 }
 
-// tagCursorLeft move tagTable cursor left (through cells)
+// printCursorLeft move cursor left (through cells), visually
 func (m *model) printCursorLeft() {
 
-	if m.printCellCursor-1 > 0 {
+	if m.printCellCursor-1 >= 2 {
 
 		nextCellCursor := m.printCellCursor - 1
 		m.printCellCursor = nextCellCursor
 	}
 }
 
-func (m *model) getPaperSize() {
+func (m *model) getPaperSize() string {
 
-	m.paperSize = m.flexBox.GetRow(m.printRowCursor).GetCell(m.printCellCursor).GetContent()
+	return m.flexBox.GetRow(m.printRowCursor).GetCell(m.printCellCursor).GetContent()
 }
 
-func (m *model) getCellSizeValue() float64 {
+func (m *model) resetViewState() {
+	m.activeInput = false
+	m.currentCSVHeaderIdx = 0
+	m.tagRowCursor = 0
+	m.tagCellCursor = 0
+	m.inputValues = inputValues{}
+}
 
-	inputValue, _ := strconv.ParseFloat(m.textInput.Value(), 64)
+func (m *model) changeCellWidth() {
 
-	if inputValue > 0 {
-		return inputValue
+	floatVal := m.inputValues.floatVal
+
+	if floatVal <= 0.1 && floatVal > 0.8 {
+		return
 	}
-	return 0.0
+
+	m.tag.tagTable[m.tagRowCursor][m.tagCellCursor].widthPerUnit = floatVal
+}
+
+func (m *model) saveInputValue() {
+
+	strInput := m.textInput.Value()
+	floatInput, _ := strconv.ParseFloat(strInput, 64)
+
+	if floatInput > 0.0 {
+		m.inputValues.floatVal = floatInput
+		m.inputValues.stringVal = strInput
+	} else {
+		m.inputValues.floatVal = 0.0
+		m.inputValues.stringVal = ""
+	}
+}
+
+func (m *model) saveToCurrentPVSelected() {
+
+	stringVal := m.inputValues.stringVal
+
+	// Both need to be saved otherwise comparison in view is impossible
+	m.pVContents.selectedValues[printViewRows[m.printRowCursor]] = stringVal
+	m.pVContents.rows[printViewRows[m.printRowCursor]][1] = stringVal
+
 }

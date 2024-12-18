@@ -5,9 +5,9 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 )
 
+// Definitions
+
 type currentView = int
-type caller = int
-type tagBuilderActions = int
 
 const (
 	welcome1View currentView = iota
@@ -18,19 +18,7 @@ const (
 	printToPDFView
 )
 
-const (
-	cellLeftInsert caller = iota
-	cellRightInsert
-	rowInsert
-	changeCellWidth
-	setTagSize
-	setFontSize
-)
-
-const (
-	textInput tagBuilderActions = iota
-	normal
-)
+// Declarations
 
 type cell struct {
 	refHeader    string
@@ -44,13 +32,10 @@ type tagRow []cell     // each element is a cell
 type tagTable []tagRow // each element is a row with cells
 
 type tagRepr struct {
-	width    float64 // real width in mm
-	height   float64 // real height in mm
-	fontSize float64
+	// width    float64 // real width in mm
+	// height   float64 // real height in mm
 	tagTable tagTable
 }
-
-// var rows map[int][]map[string]string
 
 type csvData struct {
 	headers      []string            // index parity with corresponding bound
@@ -59,10 +44,28 @@ type csvData struct {
 	boundRows    []bool
 }
 
+type printViewContents struct {
+	rows           map[string][]string
+	selectedValues map[string]string
+}
+
+var paperSizes []string
+
+// var fontTypes []string
+// var printKeysRowsStaticSI map[string]int
+// var printKeysRowsInputsSI map[string]int
+var printKeysStatic map[int]string
+var printKeysInputs map[int]string
+var printViewRows map[int]string
+
+type inputValues struct {
+	floatVal  float64
+	stringVal string
+}
+
 type model struct {
 	currentView         currentView
-	updateType          tagBuilderActions
-	inputCaller         caller
+	inputCaller         func()
 	activeInput         bool
 	tagRowCursor        int
 	tagCellCursor       int
@@ -70,14 +73,13 @@ type model struct {
 	printCellCursor     int
 	currentTag          int
 	currentCSVHeaderIdx int
-	lastCSVHeaderIdx    int
-	inputValue          string
-	paperSize           string
+	prevCSVHeaderIdx    int
+	inputValues         inputValues
+	pVContents          printViewContents
 	textInput           textinput.Model
-	// tag                []tagRepr
-	tag     tagRepr
-	csvData csvData
-	flexBox *flexbox.FlexBox
+	tag                 tagRepr
+	csvData             csvData
+	flexBox             *flexbox.FlexBox
 }
 
 func InitialModel() *model {
@@ -90,18 +92,43 @@ func InitialModel() *model {
 		tagTable: tagTable{},
 	}
 
-	// Cursors start at -1 to avoid starting with a tagCellselected
+	dm.inputValues = inputValues{}
+
 	dm.tagRowCursor = 0
 	dm.tagCellCursor = 0
 	dm.printRowCursor = 1
-	dm.printCellCursor = 1
+	dm.printCellCursor = 2
 	dm.currentTag = 0
 	dm.currentView = welcome1View
-	dm.updateType = normal
+	dm.activeInput = false
 	dm.currentCSVHeaderIdx = 0
-	dm.lastCSVHeaderIdx = -1
-	dm.tag.width = 0
-	dm.tag.height = 0
+	dm.prevCSVHeaderIdx = -1
+
+	printKeysStatic = map[int]string{1: "paper"}
+	// printKeysRowsStatic = map[int]string{1: "paper", 2:"font"}
+
+	printKeysInputs = map[int]string{2: "width", 3: "height", 4: "fontSize"}
+
+	printViewRows = map[int]string{1: "paper", 2: "width", 3: "height", 4: "fontSize"}
+
+	paperSizes = []string{"A4", "Letter"}
+
+	dm.pVContents.rows = map[string][]string{
+		"paper": {"Select paper size:"},
+		// "fontType": {"Select font type:", ""},
+		"width":    {"Enter tag width [mm]:", ""},
+		"height":   {"Enter tag height [mm]:", ""},
+		"fontSize": {"Enter font size [pt]:", ""},
+	}
+
+	dm.pVContents.selectedValues = map[string]string{
+		"paper":    "",
+		"width":    "",
+		"height":   "",
+		"fontSize": "",
+	}
+
+	dm.pVContents.rows["paper"] = append(dm.pVContents.rows["paper"], paperSizes...)
 
 	dm.csvData.boundRows = make([]bool, len(dm.csvData.headers))
 	dm.csvData.boundHeaders = make([]bool, len(dm.csvData.headers))

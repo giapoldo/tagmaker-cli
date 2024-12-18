@@ -20,28 +20,17 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.welcomeKeys(msg)
 	case welcome2View:
 		return m.welcomeKeys(msg)
-	case tagBuilderView:
-		switch m.updateType {
-		case normal:
-			return m.tagBuilderKeys(msg)
-		case textInput:
+	case tagBuilderView, dataBinderView, tagViewerView:
+		if m.activeInput {
 			return m.textInputKeys(msg)
-		}
-	case dataBinderView:
-		return m.dataBindKeys(msg)
-	case tagViewerView:
-		switch m.updateType {
-		case normal:
-			return m.tagViewerKeys(msg)
-		case textInput:
-			return m.textInputKeys(msg)
+		} else {
+			return m.tagKeys(msg)
 		}
 	case printToPDFView:
-		switch m.updateType {
-		case normal:
-			return m.printToPDFKeys(msg)
-		case textInput:
+		if m.activeInput {
 			return m.textInputKeys(msg)
+		} else {
+			return m.printToPDFKeys(msg)
 		}
 	}
 	return m, nil
@@ -59,37 +48,36 @@ func (m *model) View() string {
 		m.welcome2View()
 		s += fmt.Sprint(m.flexBox.Render())
 	case tagBuilderView:
-		switch m.updateType {
-		case normal:
-			m.tagBuilderView("")
-		case textInput:
+		if m.activeInput {
 			m.tagBuilderView(m.textInput.View())
+		} else {
+			m.tagBuilderView("")
 		}
 		s += fmt.Sprint(m.flexBox.Render())
 
 	case dataBinderView:
-		if m.lastCSVHeaderIdx+1 == m.currentCSVHeaderIdx {
+		if m.prevCSVHeaderIdx+1 == m.currentCSVHeaderIdx {
 			m.dataBinderView(m.csvData.headers[m.currentCSVHeaderIdx])
-		} else if m.lastCSVHeaderIdx == m.currentCSVHeaderIdx {
+		} else if m.prevCSVHeaderIdx == m.currentCSVHeaderIdx {
 			m.dataBinderView(fmt.Sprintf("%s data", m.csvData.headers[m.currentCSVHeaderIdx]))
 		}
 		s += fmt.Sprint(m.flexBox.Render())
 
 	case tagViewerView:
-		switch m.updateType {
-		case normal:
-			m.tagViewerView("")
-		case textInput:
+		if m.activeInput {
 			m.tagViewerView(m.textInput.View())
+		} else {
+			m.tagViewerView("")
 		}
+
 		s += fmt.Sprint(m.flexBox.Render())
 	case printToPDFView:
-		switch m.updateType {
-		case normal:
-			m.printToPDFView("")
-		case textInput:
+		if m.activeInput {
 			m.printToPDFView(m.textInput.View())
+		} else {
+			m.printToPDFView("")
 		}
+
 		s += fmt.Sprint(m.flexBox.Render())
 	}
 	return s

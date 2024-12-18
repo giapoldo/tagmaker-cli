@@ -1,8 +1,6 @@
 package main
 
 import (
-	"log"
-
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -108,7 +106,7 @@ func (m *model) toggleBold() {
 	}
 
 	m.tag.tagTable[m.tagRowCursor][m.tagCellCursor] = cell
-	log.Print(m.tag.tagTable[m.tagRowCursor][m.tagCellCursor])
+	// log.Print(m.tag.tagTable[m.tagRowCursor][m.tagCellCursor])
 }
 
 func (m *model) toggleItalic() {
