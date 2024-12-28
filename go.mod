@@ -1,4 +1,4 @@
-module github.com/garvamel/tagmaker
+module github.com/giapoldo/tagmaker
 
 go 1.23.0
 

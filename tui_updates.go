@@ -50,7 +50,6 @@ func (m *model) textInputKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		// These keys should exit the program.
 		case "enter":
-			// m.inputValue = m.getCellSizeValue()
 			m.saveInputValue()
 			m.inputCaller()
 			m.unsetUserInput()
@@ -108,10 +107,6 @@ func (m *model) tagKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// These keys should exit the program.
 		case "ctrl+c", "q":
 			return m, tea.Quit
-			// case "enter":
-			// 	m.inputValue = m.textInput.Value()
-			// 	m.inputCaller()
-			// 	m.unsetUserInput()
 		case "up":
 			m.tagCursorUp()
 		case "down":
@@ -120,25 +115,6 @@ func (m *model) tagKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.tagCursorLeft()
 		case "right":
 			m.tagCursorRight()
-			// case "n":
-			// 	switch m.currentView {
-			// 	case tagBuilderView:
-			// 		m.currentView = dataBinderView
-			// 	case dataBinderView:
-			// 		m.currentView = tagViewerView
-			// 	case tagViewerView:
-			// 		m.currentView = printToPDFView
-			// 	}
-			// 	m.resetViewState()
-			// case "esc":
-			// 	switch m.currentView {
-			// 	case tagBuilderView:
-			// 	case dataBinderView:
-			// 		m.currentView = tagBuilderView
-			// 	case tagViewerView:
-			// 		m.currentView = dataBinderView
-			// 	}
-			// 	m.resetViewState()
 		}
 
 		switch m.currentView {
@@ -146,8 +122,6 @@ func (m *model) tagKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch msg.String() {
 			case "a":
 				m.insertTagRow()
-			case "z":
-				m.deleteTagRow()
 			case "x":
 				m.deleteTagCell()
 			case "s":
@@ -237,19 +211,6 @@ func (m *model) printToPDFKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.textInput.Placeholder = "Enter font size"
 
 			}
-
-			// if m.activeInput {
-			// 	m.pVContents.selectedValues[printViewRows[m.printRowCursor]] =
-			// }
-			// switch m.printRowCursor {
-			// case 1:
-			// }
-			// if m.printRowCursor == 1 {
-			// } else {
-
-			// 	m.pVContents.selectedValues[]
-			// }
-
 		case "p":
 			m.pdfGenerator()
 		case "up":

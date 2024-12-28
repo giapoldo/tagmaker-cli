@@ -109,7 +109,7 @@ func (m *model) tagBuilderView(footerText string) {
 
 	helpRow := m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("Arrows to move"))
 	rows = append(rows, helpRow)
-	helpRow = m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("A: Insert row below\t\tZ: Delete current row\t\tX: Delete current cell"))
+	helpRow = m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("A: Insert row below\t\tX: Delete selected cell"))
 	rows = append(rows, helpRow)
 	helpRow = m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("S: Insert cell to the left\tD: Insert cell to the right"))
 	rows = append(rows, helpRow)
@@ -270,7 +270,7 @@ func (m *model) tagViewerView(footerText string) {
 	rows = append(rows, helpRow)
 	helpRow = m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("W: change current cell width (UNSAFE: make sure all cell widths in the row add up to 1.0)"))
 	rows = append(rows, helpRow)
-	helpRow = m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("K: Previous tag\t\tL: Next tag\t\tP: Generate PDF"))
+	helpRow = m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("K: Previous tag\t\tL: Next tag"))
 	rows = append(rows, helpRow)
 	helpRow = m.flexBox.NewRow().AddCells(flexbox.NewCell(120, 5).SetStyle(styleHelp).SetContent("N: Go to Print Screen\t\tESC: Return to previous screen"))
 	rows = append(rows, helpRow)

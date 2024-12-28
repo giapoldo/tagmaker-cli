@@ -35,4 +35,4 @@ Follow the on screen instructions
 
 ### Submit a pull request
 
-If you'd like to contribute, clone the project (see **Usage**) and Submit a pull request to the `main` branch.
+If you'd like to contribute, clone the project (see **Usage**) and submit a pull request to the `main` branch.
