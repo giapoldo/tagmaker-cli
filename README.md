@@ -20,16 +20,16 @@ Use [webi](https://webinstall.dev/go/) for an easy installation
 
 ### Make sure everything is installed
 
-1. Navigate to the folder where the repo was clones
+1. Navigate to the folder where the repo was cloned
 2. Run `go mod tidy`
 
 ### Start the program
 
-2. Exectute `go run .`
+2. Execute `go run .`
 
 ### Use the program
 
-Follow the on screen instructions
+Follow the on-screen instructions
 
 ## Contributing
 
