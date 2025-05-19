@@ -1,7 +1,7 @@
 # TagMaker: The tag creation tool for samples and collections
 
 ## Description
-TagMaker solves creation and printing of formatted data as a tag for samples bagsor collections boxes
+TagMaker solves creation and printing of formatted data as a tag for samples bags or collections boxes
 
 ## Why?
 The inspiration for this project comes from the need to quickly and effectively be able to print tags 
